@@ -1,59 +1,47 @@
-# task-executor
+# Task Executor
 
-A VS Code extension for executing and managing tasks efficiently.
+A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts from your project's `package.json`.
 
 ## Features
 
-- Execute tasks directly from VS Code
-- Manage task configurations
-- Integrated task execution interface
+✨ **Quick Script Discovery** - Browse all scripts defined in your `package.json` via Command Palette
+
+🚀 **Automatic Package Manager Detection** - Automatically detects whether your project uses npm, pnpm, or yarn
+
+⚡ **Integrated Terminal Execution** - Executes scripts directly in VS Code's integrated terminal
+
+💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
 
 ## Requirements
 
 - VS Code 1.60.0 or higher
-- Node.js 14.x or higher (for development)
 
-## Installation
+## Usage
 
-Clone the repository and install dependencies:
+1. Open the Command Palette (`Cmd+Shift+P` on macOS, `Ctrl+Shift+P` on Windows/Linux)
+2. Type "Task Executor: Run Script"
+3. Select the script you want to run from the quick pick menu
+4. The script will execute in the integrated terminal
 
-```bash
-npm install
-```
+## How It Works
 
-## Development
+- Reads your project's `package.json` file
+- Extracts all scripts defined in the `scripts` section
+- Displays them in a searchable quick pick interface
+- Detects your package manager based on lock files (pnpm-lock.yaml, yarn.lock, or package-lock.json)
+- Executes the selected script using the appropriate command (`npm run`, `pnpm run`, or `yarn`)
 
-### Compile the extension
-```bash
-npm run compile
-```
+## Supported Package Managers
 
-### Watch mode (automatic compilation)
-```bash
-npm run watch
-```
+- **npm** (detects `package-lock.json`)
+- **pnpm** (detects `pnpm-lock.yaml`)
+- **yarn** (detects `yarn.lock`)
 
-### Run tests
-```bash
-npm run test
-```
-
-### Launch the extension
-Press `F5` in VS Code to start the debug session, or use the Run and Debug view.
-
-## Extension Settings
-
-Currently, no configuration settings are available. Settings will be added in future versions.
+If no lock file is found, defaults to npm.
 
 ## Known Issues
 
 None at this time.
-
-## Release Notes
-
-### 1.0.0
-
-- Initial release of task-executor extension
 
 ---
 

@@ -1,8 +1,18 @@
 {
   "name": "task-executor",
   "displayName": "Task Executor",
-  "description": "Execute npm/pnpm/yarn scripts from VS Code Command Palette",
+  "description": "Quickly discover and run npm/pnpm/yarn scripts from your package.json",
   "version": "0.0.1",
+  "author": "David Vigo",
+  "license": "MIT",
+  "homepage": "https://github.com/dvigo/task-executor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dvigo/task-executor"
+  },
+  "bugs": {
+    "url": "https://github.com/dvigo/task-executor/issues"
+  },
   "engines": {
     "vscode": "^1.108.1"
   },

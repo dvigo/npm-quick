@@ -1,9 +1,12 @@
 # Change Log
 
-All notable changes to the "task-executor" extension will be documented in this file.
+All notable changes to the "Task Executor" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [0.0.1] - 2026-01-30
 
-## [Unreleased]
-
-- Initial release
+### Added
+- Initial release of Task Executor
+- Command to discover and execute scripts from package.json
+- Automatic package manager detection (npm, pnpm, yarn)
+- Quick pick interface for script selection
+- Integrated terminal execution
