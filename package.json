@@ -1,7 +1,7 @@
 {
   "name": "task-executor",
-  "displayName": "task-executor",
-  "description": "",
+  "displayName": "Task Executor",
+  "description": "Execute npm/pnpm/yarn scripts from VS Code Command Palette",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.108.1"
@@ -9,13 +9,15 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:task-executor.runScript"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "task-executor.helloWorld",
-        "title": "Hello World"
+        "command": "task-executor.runScript",
+        "title": "Task Executor: Run Script"
       }
     ]
   },

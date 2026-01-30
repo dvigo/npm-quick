@@ -1,26 +1,59 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { readPackageJson, detectPackageManager, getScriptCommand } from './packageManager';
+import { ScriptItem } from './types';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	console.log('Activating task-executor extension');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "task-executor" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('task-executor.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from task-executor!');
+	const disposable = vscode.commands.registerCommand('task-executor.runScript', async () => {
+		await runScriptCommand();
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
+async function runScriptCommand(): Promise<void> {
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+
+	if (!workspaceFolders || workspaceFolders.length === 0) {
+		vscode.window.showErrorMessage('No workspace folder is open');
+		return;
+	}
+
+	const workspacePath = workspaceFolders[0].uri.fsPath;
+
+	// Read package.json
+	const packageJson = await readPackageJson(workspacePath);
+	if (!packageJson || !packageJson.scripts || Object.keys(packageJson.scripts).length === 0) {
+		vscode.window.showErrorMessage('No scripts found in package.json');
+		return;
+	}
+
+	// Create script items for quick pick
+	const scriptItems: ScriptItem[] = Object.entries(packageJson.scripts).map(([name, command]) => ({
+		label: name,
+		description: command as string,
+		script: name,
+	}));
+
+	// Show quick pick
+	const selectedScript = await vscode.window.showQuickPick(scriptItems, {
+		placeHolder: 'Select a script to run',
+		matchOnDescription: true,
+	});
+
+	if (!selectedScript) {
+		return; // User cancelled
+	}
+
+	// Detect package manager
+	const packageManager = await detectPackageManager(workspacePath);
+	const command = getScriptCommand(selectedScript.script, packageManager);
+
+	// Create or get terminal
+	const terminal = vscode.window.activeTerminal || vscode.window.createTerminal('task-executor');
+	terminal.show();
+	terminal.sendText(command);
+}
+
 export function deactivate() {}
