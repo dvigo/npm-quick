@@ -132,6 +132,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 - Feature requests
 - Development setup
 - Code style and commit message conventions
+- **Signed commits requirement** - All commits must be signed with a GPG key for security purposes
 
 ## Known Issues
 

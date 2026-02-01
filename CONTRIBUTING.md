@@ -66,15 +66,76 @@ We welcome feature suggestions! Please describe:
    npm run test
    ```
 
-5. **Commit with descriptive messages**
+5. **Commit with signed commits**
+   All commits must be signed with a GPG key. To sign your commits:
+
+   First, if you don't have a GPG key, generate one:
+   ```bash
+   gpg --full-generate-key
+   ```
+
+   Then configure Git to use your GPG key:
+   ```bash
+   git config user.signingkey <YOUR_GPG_KEY_ID>
+   ```
+
+   To make signing automatic for this repository:
+   ```bash
+   git config commit.gpgsign true
+   ```
+
+   Now commit with your descriptive message:
    ```bash
    git commit -m "feat: add your feature description"
+   ```
+
+   The `-S` flag is implicit if you've set `commit.gpgsign true`. You can verify the commit was signed:
+   ```bash
+   git log --show-signature
    ```
 
 6. **Push and create a Pull Request**
    ```bash
    git push origin feature/your-feature-name
    ```
+
+## Signed Commits Policy
+
+**All commits in this repository must be signed with a GPG key.** This is a security measure to verify the authenticity of contributions.
+
+### Setting up GPG signing:
+
+If you're new to GPG signing, follow these steps:
+
+1. **Generate a GPG key** (if you don't have one):
+   ```bash
+   gpg --full-generate-key
+   ```
+   - Choose RSA as the key type
+   - Use 4096 bits for the key size
+   - Set an expiration period (1 year is recommended)
+
+2. **Get your GPG key ID**:
+   ```bash
+   gpg --list-secret-keys --keyid-format=long
+   ```
+   The key ID is the 16-character string after "sec"
+
+3. **Configure Git**:
+   ```bash
+   git config user.signingkey <YOUR_GPG_KEY_ID>
+   git config commit.gpgsign true
+   ```
+
+4. **Add your public key to GitHub** (if using GitHub):
+   - Get your public key: `gpg --armor --export <YOUR_GPG_KEY_ID>`
+   - Add it in Settings → SSH and GPG keys
+
+### Verifying signed commits:
+
+```bash
+git log --show-signature
+```
 
 ## Code Style
 
