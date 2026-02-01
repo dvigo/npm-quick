@@ -1,6 +1,6 @@
-# Task Executor
+# npm quick
 
-A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts from your project's `package.json`.
+A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts directly from the Command Palette.
 
 ## Features
 
@@ -22,7 +22,7 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 1. Install the extension from the VS Code Marketplace
 2. Open a project folder that contains a `package.json` with scripts
 3. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux) to open Command Palette
-4. Type "Task Executor: Run Script"
+4. Type "npm quick: Run Script"
 5. Select the script you want to run from the list
 6. The script executes in the integrated terminal
 
@@ -30,17 +30,17 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 ### Running Tests
 ```
-Cmd+Shift+P → "Task Executor: Run Script" → Select "test"
+Cmd+Shift+P → "npm quick: Run Script" → Select "test"
 ```
 
 ### Running Build
 ```
-Cmd+Shift+P → "Task Executor: Run Script" → Select "build"
+Cmd+Shift+P → "npm quick: Run Script" → Select "build"
 ```
 
 ### Running Dev Server
 ```
-Cmd+Shift+P → "Task Executor: Run Script" → Select "dev"
+Cmd+Shift+P → "npm quick: Run Script" → Select "dev"
 ```
 
 ## How It Works
@@ -67,8 +67,8 @@ The extension:
 
 ## Command Reference
 
-### Task Executor: Run Script
-- **Command ID**: `task-executor.runScript`
+### npm quick: Run Script
+- **Command ID**: `npm-quick.runScript`
 - **Keybinding**: None (use Command Palette)
 - **Description**: Displays a quick pick menu with all available scripts from `package.json`
 
@@ -154,7 +154,7 @@ MIT - See LICENSE file for details
 
 ## Support
 
-If you encounter any issues, please report them on [GitHub Issues](https://github.com/dvigo/task-executor/issues)
+If you encounter any issues, please report them on [GitHub Issues](https://github.com/dvigo/npm-quick/issues)
 
 ---
 

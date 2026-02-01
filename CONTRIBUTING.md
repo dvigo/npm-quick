@@ -1,6 +1,6 @@
-# Contributing to Task Executor
+# Contributing to npm quick
 
-Thank you for your interest in contributing to Task Executor! We appreciate all contributions, from bug reports to feature implementations.
+Thank you for your interest in contributing to npm quick! We appreciate all contributions, from bug reports to feature implementations.
 
 ## How to Report Bugs
 
@@ -126,4 +126,4 @@ Feel free to open an issue or discussion on the GitHub repository. We're here to
 
 ---
 
-Thank you for contributing to Task Executor! 🚀
+Thank you for contributing to npm quick! 🚀

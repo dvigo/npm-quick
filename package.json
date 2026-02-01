@@ -1,8 +1,8 @@
 {
-  "name": "task-executor",
+  "name": "npm-quick",
   "publisher": "dvigo",
-  "displayName": "Task Executor",
-  "description": "Quickly discover and run npm/pnpm/yarn scripts from your package.json",
+  "displayName": "npm quick",
+  "description": "Quickly discover and run npm/pnpm/yarn scripts from the Command Palette",
   "version": "0.0.1",
   "icon": "icon.png",
   "author": "David Vigo",

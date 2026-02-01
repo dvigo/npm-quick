@@ -1,13 +1,13 @@
 # Change Log
 
-All notable changes to the "Task Executor" extension will be documented in this file.
+All notable changes to the "npm quick" extension will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [0.0.1] - 2026-01-30
 
 ### Added
-- Initial release of Task Executor
+- Initial release of npm quick
 - Command to discover and execute scripts from package.json via Command Palette
 - Automatic package manager detection (npm, pnpm, yarn)
 - Quick pick interface for script selection with search/filter support

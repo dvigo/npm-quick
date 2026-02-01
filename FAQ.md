@@ -1,23 +1,23 @@
-# FAQ - Task Executor
+# FAQ - npm quick
 
 ## General Questions
 
-### Q: What is Task Executor?
-**A:** Task Executor is a VS Code extension that helps you quickly discover and run npm/pnpm/yarn scripts from your project's `package.json` file without leaving the editor.
+### Q: What is npm quick?
+**A:** npm quick is a VS Code extension that helps you quickly discover and run npm/pnpm/yarn scripts from your project's `package.json` file without leaving the editor.
 
-### Q: How do I install Task Executor?
-**A:** You can install it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com) by searching for "Task Executor" or visiting the extension's marketplace page.
+### Q: How do I install npm quick?
+**A:** You can install it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com) by searching for "npm quick" or visiting the extension's marketplace page.
 
-### Q: Is Task Executor free?
-**A:** Yes, Task Executor is completely free and open-source under the MIT license.
+### Q: Is npm quick free?
+**A:** Yes, npm quick is completely free and open-source under the MIT license.
 
-### Q: Can I use Task Executor with other package managers?
-**A:** Currently, Task Executor supports npm, pnpm, and yarn. If you use a different package manager, please open an issue on GitHub.
+### Q: Can I use npm quick with other package managers?
+**A:** Currently, npm quick supports npm, pnpm, and yarn. If you use a different package manager, please open an issue on GitHub.
 
 ## Usage Questions
 
 ### Q: How do I run a script?
-**A:** Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux), type "Task Executor: Run Script", and select the script you want to run.
+**A:** Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux), type "npm quick: Run Script", and select the script you want to run.
 
 ### Q: Can I run scripts without opening the Command Palette?
 **A:** Not yet, but you can easily assign a keyboard shortcut in VS Code settings. See VS Code's [keybindings documentation](https://code.visualstudio.com/docs/getstarted/keybindings) for how to do this.
@@ -34,7 +34,7 @@
 
 ## Package Manager Detection
 
-### Q: How does Task Executor know which package manager to use?
+### Q: How does npm quick know which package manager to use?
 **A:** It checks for lock files in your project root in this order:
 1. `pnpm-lock.yaml` → uses pnpm
 2. `yarn.lock` → uses yarn
@@ -91,40 +91,40 @@ Check the terminal output for error details.
 **A:** Absolutely! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
 
 ### Q: Where is the source code?
-**A:** The source code is available on [GitHub](https://github.com/dvigo/task-executor).
+**A:** The source code is available on [GitHub](https://github.com/dvigo/npm-quick).
 
 ### Q: How can I report a bug?
-**A:** Open an issue on [GitHub Issues](https://github.com/dvigo/task-executor/issues) with:
+**A:** Open an issue on [GitHub Issues](https://github.com/dvigo/npm-quick/issues) with:
 - A clear description
 - Steps to reproduce
 - Your environment (OS, VS Code version)
 - Screenshots if applicable
 
 ### Q: How can I request a feature?
-**A:** Open a feature request on [GitHub Issues](https://github.com/dvigo/task-executor/issues) describing:
+**A:** Open a feature request on [GitHub Issues](https://github.com/dvigo/npm-quick/issues) describing:
 - The use case
 - Your proposed solution
 - Any alternatives you've considered
 
 ## Performance Questions
 
-### Q: Does Task Executor slow down VS Code?
-**A:** No, Task Executor is lightweight and only activates when you run the command. It has minimal impact on VS Code's performance.
+### Q: Does npm quick slow down VS Code?
+**A:** No, npm quick is lightweight and only activates when you run the command. It has minimal impact on VS Code's performance.
 
 ### Q: How long does it take to load scripts?
 **A:** Typically less than 100ms. If you notice delays, it might be due to your `package.json` size or file system speed.
 
 ## Compatibility Questions
 
-### Q: What versions of VS Code does Task Executor support?
+### Q: What versions of VS Code does npm quick support?
 **A:** VS Code 1.60.0 and later.
 
 ### Q: Does Task Executor work on Windows, macOS, and Linux?
 **A:** Yes, it works on all platforms where VS Code is available.
 
-### Q: Can I use Task Executor in remote workspaces (SSH, WSL, Containers)?
-**A:** Yes, Task Executor works with VS Code's remote development features.
+### Q: Can I use npm quick in remote workspaces (SSH, WSL, Containers)?
+**A:** Yes, npm quick works with VS Code's remote development features.
 
 ---
 
-Didn't find your answer? [Open an issue on GitHub](https://github.com/dvigo/task-executor/issues)!
+Didn't find your answer? [Open an issue on GitHub](https://github.com/dvigo/npm-quick/issues)!

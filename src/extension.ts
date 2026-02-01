@@ -3,9 +3,9 @@ import { readPackageJson, detectPackageManager, getScriptCommand } from './packa
 import { ScriptItem } from './types';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Activating task-executor extension');
+	console.log('Activating npm quick extension');
 
-	const disposable = vscode.commands.registerCommand('task-executor.runScript', async () => {
+	const disposable = vscode.commands.registerCommand('npm-quick.runScript', async () => {
 		await runScriptCommand();
 	});
 
