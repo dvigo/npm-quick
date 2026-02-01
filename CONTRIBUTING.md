@@ -25,8 +25,8 @@ We welcome feature suggestions! Please describe:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/dvigo/task-executor.git
-   cd task-executor
+   git clone https://github.com/dvigo/npm-quick.git
+   cd npm-quick
    ```
 
 2. **Install dependencies**

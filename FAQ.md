@@ -42,7 +42,7 @@
 4. No lock file → defaults to npm
 
 ### Q: What if I use multiple package managers?
-**A:** Task Executor will prioritize based on the lock files present. Make sure you only have one package manager's lock file in your project root.
+**A:** npm quick will prioritize based on the lock files present. Make sure you only have one package manager's lock file in your project root.
 
 ### Q: Can I manually specify which package manager to use?
 **A:** Not in the current version. Please open a feature request if you need this functionality.
@@ -87,7 +87,7 @@ Check the terminal output for error details.
 
 ## Development Questions
 
-### Q: Can I contribute to Task Executor?
+### Q: Can I contribute to npm quick?
 **A:** Absolutely! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
 
 ### Q: Where is the source code?
@@ -119,7 +119,7 @@ Check the terminal output for error details.
 ### Q: What versions of VS Code does npm quick support?
 **A:** VS Code 1.60.0 and later.
 
-### Q: Does Task Executor work on Windows, macOS, and Linux?
+### Q: Does npm quick work on Windows, macOS, and Linux?
 **A:** Yes, it works on all platforms where VS Code is available.
 
 ### Q: Can I use npm quick in remote workspaces (SSH, WSL, Containers)?

@@ -2,18 +2,18 @@
   "name": "npm-quick",
   "publisher": "dvigo",
   "displayName": "npm quick",
-  "description": "Quickly discover and run npm/pnpm/yarn scripts from the Command Palette",
-  "version": "0.0.1",
+  "description": "Discover and run npm/pnpm/yarn scripts instantly from the Command Palette. Save time and boost productivity.",
+  "version": "0.0.2",
   "icon": "icon.png",
   "author": "David Vigo",
   "license": "MIT",
-  "homepage": "https://github.com/dvigo/task-executor",
+  "homepage": "https://github.com/dvigo/npm-quick",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dvigo/task-executor"
+    "url": "https://github.com/dvigo/npm-quick"
   },
   "bugs": {
-    "url": "https://github.com/dvigo/task-executor/issues"
+    "url": "https://github.com/dvigo/npm-quick/issues"
   },
   "engines": {
     "vscode": "^1.108.1"
@@ -21,15 +21,26 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "npm",
+    "pnpm",
+    "yarn",
+    "scripts",
+    "tasks",
+    "productivity",
+    "automation",
+    "command-palette",
+    "package-manager"
+  ],
   "activationEvents": [
-    "onCommand:task-executor.runScript"
+    "onCommand:npm-quick.runScript"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "task-executor.runScript",
-        "title": "Task Executor: Run Script"
+        "command": "npm-quick.runScript",
+        "title": "npm quick: Run Script"
       }
     ]
   },
