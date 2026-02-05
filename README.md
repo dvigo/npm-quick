@@ -4,13 +4,15 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 ## Features
 
-✨ **Quick Script Discovery** - Browse all scripts defined in your `package.json` via Command Palette
+✨ **Quick Script Discovery** - Browse all scripts defined in your `package.json` via Command Palette or keyboard shortcut
 
 🚀 **Automatic Package Manager Detection** - Automatically detects whether your project uses npm, pnpm, or yarn based on lock files
 
 ⚡ **Integrated Terminal Execution** - Executes scripts directly in VS Code's integrated terminal
 
 💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
+
+⌨️ **Keyboard Shortcut** - Quick access with `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R` (Windows/Linux)
 
 ## Requirements
 
@@ -21,8 +23,11 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 1. Install the extension from the VS Code Marketplace
 2. Open a project folder that contains a `package.json` with scripts
-3. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux) to open Command Palette
-4. Type "npm quick: Run Script"
+3. **Option A (Keyboard Shortcut - Fastest)**:
+   - Press `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R` (Windows/Linux)
+4. **Option B (Command Palette)**:
+   - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
+   - Type "npm quick: Run Script"
 5. Select the script you want to run from the list
 6. The script executes in the integrated terminal
 
@@ -66,7 +71,10 @@ The extension:
 | **yarn** | `yarn.lock` | `yarn <script>` |
 
 ## Command Reference
-
+Default Keybinding**: 
+  - macOS: `Cmd+Shift+R`
+  - Windows/Linux: `Ctrl+Shift+R`
+- **Alternative**: Use Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and search for "npm quick"
 ### npm quick: Run Script
 - **Command ID**: `npm-quick.runScript`
 - **Keybinding**: None (use Command Palette)
@@ -138,11 +146,12 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 None at this time.
 
-## Future Enhancements
-
-Potential features for future releases:
-- Custom keybindings for frequently used scripts
-- Workspace settings to customize behavior
+##Workspace settings to customize behavior
+- Script history/recent scripts list
+- Custom script grouping or categorization
+- Interactive script with parameter input
+- Script icons based on script type (test, build, dev, etc.)
+- Support for multiple workspace folders with selection prompor
 - Script history/recent scripts list
 - Custom script grouping or categorization
 - Interactive script with parameter input

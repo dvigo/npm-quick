@@ -42,6 +42,14 @@
         "command": "npm-quick.runScript",
         "title": "npm quick: Run Script"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "npm-quick.runScript",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorTextFocus || explorerViewletFocus"
+      }
     ]
   },
   "scripts": {
