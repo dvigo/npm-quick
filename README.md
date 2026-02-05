@@ -12,7 +12,7 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
 
-⌨️ **Keyboard Shortcut** - Quick access with `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R` (Windows/Linux)
+⌨️ **Keyboard Shortcut** - Quick access with `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
 
 ## Requirements
 
@@ -24,7 +24,7 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 1. Install the extension from the VS Code Marketplace
 2. Open a project folder that contains a `package.json` with scripts
 3. **Option A (Keyboard Shortcut - Fastest)**:
-   - Press `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R` (Windows/Linux)
+   - Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
 4. **Option B (Command Palette)**:
    - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
    - Type "npm quick: Run Script"
@@ -71,13 +71,13 @@ The extension:
 | **yarn** | `yarn.lock` | `yarn <script>` |
 
 ## Command Reference
-Default Keybinding**: 
-  - macOS: `Cmd+Shift+R`
-  - Windows/Linux: `Ctrl+Shift+R`
-- **Alternative**: Use Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and search for "npm quick"
+
 ### npm quick: Run Script
 - **Command ID**: `npm-quick.runScript`
-- **Keybinding**: None (use Command Palette)
+- **Default Keybinding**: 
+  - macOS: `Cmd+Alt+N`
+  - Windows/Linux: `Ctrl+Alt+N`
+- **Alternative**: Use Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and search for "npm quick"
 - **Description**: Displays a quick pick menu with all available scripts from `package.json`
 
 ## Tips & Tricks
