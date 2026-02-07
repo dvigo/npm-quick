@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { readPackageJson, detectPackageManager, getScriptCommand } from './packageManager';
 import { ScriptItem } from './types';
+import { detectScriptType, getScriptTypeLabel } from './scriptIcons';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Activating npm quick extension');
@@ -30,11 +31,16 @@ async function runScriptCommand(): Promise<void> {
 	}
 
 	// Create script items for quick pick
-	const scriptItems: ScriptItem[] = Object.entries(packageJson.scripts).map(([name, command]) => ({
-		label: name,
-		description: command as string,
-		script: name,
-	}));
+	const scriptItems: (vscode.QuickPickItem & ScriptItem)[] = Object.entries(packageJson.scripts).map(([name, command]) => {
+		const scriptType = detectScriptType(name);
+		const typeLabel = getScriptTypeLabel(scriptType);
+		return {
+			label: `${typeLabel}  ${name}`,
+			description: command as string,
+			script: name,
+			scriptType,
+		};
+	});
 
 	// Show quick pick
 	const selectedScript = await vscode.window.showQuickPick(scriptItems, {

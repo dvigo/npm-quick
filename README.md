@@ -2,6 +2,10 @@
 
 A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts directly from the Command Palette.
 
+[![Install](https://img.shields.io/badge/install-vs--code--marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)
+
+**[Get it from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)**
+
 ## Features
 
 ✨ **Quick Script Discovery** - Browse all scripts defined in your `package.json` via Command Palette or keyboard shortcut
@@ -21,7 +25,7 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 ## Quick Start
 
-1. Install the extension from the VS Code Marketplace
+1. **[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)**
 2. Open a project folder that contains a `package.json` with scripts
 3. **Option A (Keyboard Shortcut - Fastest)**:
    - Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
@@ -145,16 +149,6 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 ## Known Issues
 
 None at this time.
-
-##Workspace settings to customize behavior
-- Script history/recent scripts list
-- Custom script grouping or categorization
-- Interactive script with parameter input
-- Script icons based on script type (test, build, dev, etc.)
-- Support for multiple workspace folders with selection prompor
-- Script history/recent scripts list
-- Custom script grouping or categorization
-- Interactive script with parameter input
 
 ## License
 

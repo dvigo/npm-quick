@@ -12,6 +12,10 @@ export interface ScriptItem {
   label: string;
   description: string;
   script: string;
+  iconPath?: string;
+  scriptType?: ScriptType;
 }
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn';
+
+export type ScriptType = 'test' | 'build' | 'dev' | 'lint' | 'format' | 'deploy' | 'docs' | 'other';
