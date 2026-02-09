@@ -3,6 +3,7 @@ import { readPackageJson, detectPackageManager, getScriptCommand } from './packa
 import { detectScriptType, getScriptTypeLabel } from './scriptIcons';
 import { ScriptsTreeDataProvider, ScriptItem } from './scriptsTreeDataProvider';
 import { OutputViewProvider } from './outputViewProvider';
+import { t } from './i18n';
 
 let treeDataProvider: ScriptsTreeDataProvider;
 let outputProvider: OutputViewProvider;
@@ -27,11 +28,19 @@ export function activate(context: vscode.ExtensionContext) {
 		(scriptName: string, command: string) => {
 			const workspaceFolders = vscode.workspace.workspaceFolders;
 			if (workspaceFolders) {
-				treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath);
+				const id = treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath);
+				// Update the current script ID in the output provider
+				(outputProvider as any).currentScriptId = id;
 			}
 		},
 		(scriptName: string, success: boolean) => {
 			treeDataProvider.removeRunningScript(scriptName, success);
+		},
+		(id: string) => {
+			treeDataProvider.removeHistoryItem(id);
+		},
+		(id: string, text: string) => {
+			treeDataProvider.appendOutput(id, text);
 		}
 	);
 
@@ -54,15 +63,45 @@ export function activate(context: vscode.ExtensionContext) {
 		await runScriptCommand(outputProvider);
 	});
 
-	const clearHistoryDisposable = vscode.commands.registerCommand('npm-quick.clearHistory', () => {
-		treeDataProvider.clearHistory();
-		vscode.window.showInformationMessage('Historial limpiado');
+	const clearHistoryDisposable = vscode.commands.registerCommand('npm-quick.clearHistory', async () => {
+		const answer = await vscode.window.showWarningMessage(
+			t('confirmClearHistory'),
+			{ modal: true },
+			t('yes'),
+			t('no')
+		);
+		
+		if (answer === t('yes')) {
+			treeDataProvider.clearHistory();
+			vscode.window.showInformationMessage(t('historyCleared'));
+		}
 	});
 
-	const removeHistoryItemDisposable = vscode.commands.registerCommand('npm-quick.removeHistoryItem', (item: ScriptItem) => {
+	const removeHistoryItemDisposable = vscode.commands.registerCommand('npm-quick.removeHistoryItem', async (item: ScriptItem) => {
 		if (item) {
-			treeDataProvider.removeHistoryItem(item.id);
+			const answer = await vscode.window.showWarningMessage(
+				t('confirmRemoveItem'),
+				{ modal: true },
+				t('yes'),
+				t('no')
+			);
+			
+			if (answer === t('yes')) {
+				treeDataProvider.removeHistoryItem(item.id);
+			}
 		}
+	});
+
+	const viewScriptOutputDisposable = vscode.commands.registerCommand('npm-quick.viewScriptOutput', async (item: ScriptItem) => {
+		if (item) {
+			const output = treeDataProvider.getOutput(item.id);
+			await outputProvider.reveal();
+			outputProvider.loadOutput(output, item.id);
+		}
+	});
+
+	const stopScriptDisposable = vscode.commands.registerCommand('npm-quick.stopScript', () => {
+		outputProvider.stopCurrentScript();
 	});
 
 	// Refresh tree when workspace changes
@@ -76,7 +115,9 @@ export function activate(context: vscode.ExtensionContext) {
 		refreshDisposable, 
 		addScriptDisposable, 
 		clearHistoryDisposable, 
-		removeHistoryItemDisposable, 
+		removeHistoryItemDisposable,
+		viewScriptOutputDisposable,
+		stopScriptDisposable,
 		workspaceChangeDisposable
 	);
 }
@@ -85,7 +126,7 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 	const workspaceFolders = vscode.workspace.workspaceFolders;
 
 	if (!workspaceFolders || workspaceFolders.length === 0) {
-		vscode.window.showErrorMessage('No workspace folder is open');
+		vscode.window.showErrorMessage(t('noWorkspace'));
 		return;
 	}
 
@@ -94,7 +135,7 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 	// Read package.json
 	const packageJson = await readPackageJson(workspacePath);
 	if (!packageJson || !packageJson.scripts || Object.keys(packageJson.scripts).length === 0) {
-		vscode.window.showErrorMessage('No scripts found in package.json');
+		vscode.window.showErrorMessage(t('noScripts'));
 		return;
 	}
 
@@ -112,7 +153,7 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 
 	// Show quick pick
 	const selectedScript = await vscode.window.showQuickPick(scriptItems, {
-		placeHolder: 'Select a script to run',
+		placeHolder: t('selectScript'),
 		matchOnDescription: true,
 	});
 
@@ -124,8 +165,11 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 	const packageManager = await detectPackageManager(workspacePath);
 	const command = getScriptCommand(selectedScript.script, packageManager);
 
+	// Create a temporary ID for tracking
+	const tempId = `${selectedScript.script}-${Date.now()}`;
+
 	// Execute in output view
-	await outputProvider.executeCommand(command, workspacePath, selectedScript.script);
+	await outputProvider.executeCommand(command, workspacePath, selectedScript.script, tempId);
 }
 
 export function deactivate() {}

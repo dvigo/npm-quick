@@ -1,13 +1,17 @@
 import * as vscode from 'vscode';
 import { ChildProcess, spawn } from 'child_process';
+import { t } from './i18n';
 
 export class OutputViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'npm-quick.outputView';
 	private view?: vscode.WebviewView;
 	private currentProcess?: ChildProcess;
 	private currentScriptName?: string;
+	private currentScriptId?: string;
 	private onProcessStart?: (scriptName: string, command: string) => void;
 	private onProcessEnd?: (scriptName: string, success: boolean) => void;
+	private onRemoveHistoryItem?: (id: string) => void;
+	private onAppendOutput?: (id: string, text: string) => void;
 
 	constructor(private context: vscode.ExtensionContext) {}
 
@@ -31,6 +35,8 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				this.currentProcess.stdin.write(message.text + '\n');
 			} else if (message.command === 'stop') {
 				this.stopCurrentProcess();
+			} else if (message.command === 'clearAndRemove') {
+				this.clearAndRemoveHistory();
 			}
 		});
 	}
@@ -43,6 +49,13 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private getHtmlForWebview(webview: vscode.Webview): string {
+		const stopText = t('stop');
+		const clearText = t('clear');
+		const placeholderText = t('enterInput');
+		const confirmClearText = t('confirmRemoveItem');
+		const yesText = t('yes');
+		const noText = t('no');
+		
 		return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,8 +96,20 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		button.stop {
 			background-color: #a1260d;
 		}
-		button.stop:hover {
+		button.stop:hover:not(:disabled) {
 			background-color: #c72e0d;
+		}
+		button.delete {
+			background-color: #6b7280;
+			color: #ffffff;
+			padding: 4px 8px;
+		}
+		button.delete:hover:not(:disabled) {
+			background-color: #9ca3af;
+		}
+		button:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
 		}
 		#output-container {
 			flex: 1;
@@ -118,18 +143,58 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			outline: none;
 			border-color: #007acc;
 		}
+		.modal {
+			display: none;
+			position: fixed;
+			z-index: 1000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0,0,0,0.4);
+			justify-content: center;
+			align-items: center;
+		}
+		.modal.show {
+			display: flex;
+		}
+		.modal-content {
+			background-color: #252526;
+			padding: 20px;
+			border: 1px solid #3c3c3c;
+			border-radius: 4px;
+			min-width: 300px;
+		}
+		.modal-buttons {
+			display: flex;
+			gap: 8px;
+			margin-top: 16px;
+			justify-content: flex-end;
+		}
+		.modal-text {
+			margin-bottom: 12px;
+		}
 	</style>
 </head>
 <body>
 	<div id="controls">
-		<button class="stop" onclick="stopProcess()">⏹ Stop</button>
-		<button onclick="clearOutput()">Clear</button>
+		<button id="stopBtn" class="stop" onclick="stopProcess()" disabled>⏹ ${stopText}</button>
+		<button id="deleteBtn" class="delete" onclick="confirmClear()" title="${clearText}" disabled>🗑️</button>
 	</div>
 	<div id="output-container">
 		<div id="output"></div>
 	</div>
 	<div id="input-container">
-		<input type="text" id="userInput" placeholder="Enter input..." />
+		<input type="text" id="userInput" placeholder="${placeholderText}" />
+	</div>
+	<div id="confirmModal" class="modal">
+		<div class="modal-content">
+			<div class="modal-text">${confirmClearText}</div>
+			<div class="modal-buttons">
+				<button onclick="cancelClear()">${noText}</button>
+				<button onclick="clearOutput()">${yesText}</button>
+			</div>
+		</div>
 	</div>
 	<script>
 		const vscode = acquireVsCodeApi();
@@ -137,6 +202,9 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		const outputContainer = document.getElementById('output-container');
 		const inputContainer = document.getElementById('input-container');
 		const userInput = document.getElementById('userInput');
+		const confirmModal = document.getElementById('confirmModal');
+		const deleteBtn = document.getElementById('deleteBtn');
+		const stopBtn = document.getElementById('stopBtn');
 
 		window.addEventListener('message', event => {
 			const message = event.data;
@@ -149,6 +217,14 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				inputContainer.classList.add('active');
 			} else if (message.command === 'disableInput') {
 				inputContainer.classList.remove('active');
+			} else if (message.command === 'enableDelete') {
+				deleteBtn.disabled = false;
+			} else if (message.command === 'disableDelete') {
+				deleteBtn.disabled = true;
+			} else if (message.command === 'enableStop') {
+				stopBtn.disabled = false;
+			} else if (message.command === 'disableStop') {
+				stopBtn.disabled = true;
 			}
 		});
 
@@ -163,11 +239,25 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		});
 
 		function stopProcess() {
-			vscode.postMessage({ command: 'stop' });
+			if (!stopBtn.disabled) {
+				vscode.postMessage({ command: 'stop' });
+			}
+		}
+
+		function confirmClear() {
+			if (!deleteBtn.disabled) {
+				confirmModal.classList.add('show');
+			}
+		}
+
+		function cancelClear() {
+			confirmModal.classList.remove('show');
 		}
 
 		function clearOutput() {
+			confirmModal.classList.remove('show');
 			outputDiv.textContent = '';
+			vscode.postMessage({ command: 'clearAndRemove' });
 		}
 	</script>
 </body>
@@ -178,20 +268,29 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'append', text });
 		}
+		// Save to history
+		if (this.currentScriptId && this.onAppendOutput) {
+			this.onAppendOutput(this.currentScriptId, text);
+		}
 	}
 
 	public clear() {
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'clear' });
+			this.view.webview.postMessage({ command: 'disableDelete' });
 		}
 	}
 
-	public async executeCommand(command: string, workspacePath: string, scriptName?: string) {
+	public async executeCommand(command: string, workspacePath: string, scriptName?: string, scriptId?: string) {
 		await this.reveal();
 		this.clear();
-		this.append(`▶ Ejecutando: ${command}\n\n`);
+		this.append(`▶ ${t('executing')}: ${command}\n\n`);
 
 		this.currentScriptName = scriptName;
+		this.currentScriptId = scriptId;
+		if (this.view) {
+			this.view.webview.postMessage({ command: 'enableDelete' });
+		}
 		if (scriptName && this.onProcessStart) {
 			this.onProcessStart(scriptName, command);
 		}
@@ -201,10 +300,12 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				cwd: workspacePath,
 				shell: true,
 				stdio: ['pipe', 'pipe', 'pipe'],
+				detached: false,
 			});
 
 			this.currentProcess = process;
 			this.enableInput();
+			this.enableStop();
 
 			process.stdout.on('data', (data) => {
 				this.append(data.toString());
@@ -220,11 +321,12 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				this.currentProcess = undefined;
 				this.currentScriptName = undefined;
 				this.disableInput();
+				this.disableStop();
 				
 				if (success) {
-					this.append(`\n\n✓ Proceso completado con código: ${code}\n`);
+					this.append(`\n\n✓ ${t('processCompleted')}: ${code}\n`);
 				} else {
-					this.append(`\n\n✗ Proceso terminó con código: ${code}\n`);
+					this.append(`\n\n✗ ${t('processTerminated')}: ${code}\n`);
 				}
 				
 				if (scriptName && this.onProcessEnd) {
@@ -237,14 +339,15 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				this.currentProcess = undefined;
 				this.currentScriptName = undefined;
 				this.disableInput();
-				this.append(`\n✗ Error: ${error.message}\n`);
+				this.disableStop();
+				this.append(`\n✗ ${t('error')}: ${error.message}\n`);
 				
 				if (scriptName && this.onProcessEnd) {
 					this.onProcessEnd(scriptName, false);
 				}
 			});
 		} catch (error) {
-			this.append(`\n✗ Error: ${error}\n`);
+			this.append(`\n✗ ${t('error')}: ${error}\n`);
 			const scriptName = this.currentScriptName;
 			this.currentScriptName = undefined;
 			if (scriptName && this.onProcessEnd) {
@@ -255,15 +358,43 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 
 	public setProcessCallbacks(
 		onStart: (scriptName: string, command: string) => void,
-		onEnd: (scriptName: string, success: boolean) => void
+		onEnd: (scriptName: string, success: boolean) => void,
+		onRemove?: (id: string) => void,
+		onAppendOutput?: (id: string, text: string) => void
 	) {
 		this.onProcessStart = onStart;
 		this.onProcessEnd = onEnd;
+		this.onRemoveHistoryItem = onRemove;
+		this.onAppendOutput = onAppendOutput;
+	}
+
+	public loadOutput(output: string, scriptId?: string) {
+		this.clear();
+		this.currentScriptId = scriptId;
+		if (this.view) {
+			this.view.webview.postMessage({ command: 'append', text: output });
+			this.view.webview.postMessage({ command: 'enableDelete' });
+			this.view.webview.postMessage({ command: 'disableStop' });
+		}
+	}
+
+	public getCurrentScriptId(): string | undefined {
+		return this.currentScriptId;
+	}
+
+	public stopCurrentScript() {
+		this.stopCurrentProcess();
 	}
 
 	private enableInput() {
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'enableInput' });
+		}
+	}
+
+	private enableStop() {
+		if (this.view) {
+			this.view.webview.postMessage({ command: 'enableStop' });
 		}
 	}
 
@@ -273,18 +404,49 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		}
 	}
 
+	private disableStop() {
+		if (this.view) {
+			this.view.webview.postMessage({ command: 'disableStop' });
+		}
+	}
+
 	private stopCurrentProcess() {
 		if (this.currentProcess) {
-			this.currentProcess.kill();
+			// Send SIGINT (Ctrl+C) to the process
+			try {
+				this.currentProcess.kill('SIGINT');
+			} catch (error) {
+				// If SIGINT fails, try SIGTERM as fallback
+				try {
+					this.currentProcess.kill('SIGTERM');
+				} catch (e) {
+					// Process might already be dead
+				}
+			}
+			
 			const scriptName = this.currentScriptName;
 			this.currentProcess = undefined;
 			this.currentScriptName = undefined;
+			this.currentScriptId = undefined;
 			this.disableInput();
-			this.append('\n\n⏹ Proceso detenido por el usuario\n');
+			this.disableStop();
+			this.append(`\n\n⏹ ${t('processStopped')}\n`);
 			
 			if (scriptName && this.onProcessEnd) {
 				this.onProcessEnd(scriptName, false);
 			}
+		}
+	}
+
+	private clearAndRemoveHistory() {
+		if (this.currentScriptId && this.onRemoveHistoryItem) {
+			this.onRemoveHistoryItem(this.currentScriptId);
+		}
+		this.currentScriptId = undefined;
+		this.currentScriptName = undefined;
+		this.clear();
+		if (this.view) {
+			this.view.webview.postMessage({ command: 'disableDelete' });
 		}
 	}
 }

@@ -90,6 +90,15 @@
         "command": "npm-quick.removeHistoryItem",
         "title": "Remove from History",
         "icon": "$(trash)"
+      },
+      {
+        "command": "npm-quick.viewScriptOutput",
+        "title": "View Output"
+      },
+      {
+        "command": "npm-quick.stopScript",
+        "title": "Stop Script",
+        "icon": "$(debug-stop)"
       }
     ],
     "menus": {
@@ -107,8 +116,13 @@
       ],
       "view/item/context": [
         {
+          "command": "npm-quick.stopScript",
+          "group": "inline@1",
+          "when": "view == npm-quick.scriptsView && viewItem == script-running"
+        },
+        {
           "command": "npm-quick.removeHistoryItem",
-          "group": "inline",
+          "group": "inline@2",
           "when": "view == npm-quick.scriptsView && viewItem == script-history"
         }
       ]

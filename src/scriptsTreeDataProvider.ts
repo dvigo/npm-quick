@@ -3,6 +3,7 @@ import * as path from 'path';
 import { readPackageJson, detectPackageManager, getScriptCommand } from './packageManager';
 import { detectScriptType, getScriptTypeLabel } from './scriptIcons';
 import { OutputViewProvider } from './outputViewProvider';
+import { t } from './i18n';
 
 export type ScriptStatus = 'running' | 'completed' | 'failed';
 
@@ -14,6 +15,7 @@ export interface ScriptHistoryEntry {
 	startTime: Date;
 	endTime?: Date;
 	workspacePath: string;
+	output: string;
 }
 
 export class ScriptItem extends vscode.TreeItem {
@@ -32,15 +34,20 @@ export class ScriptItem extends vscode.TreeItem {
 		this.description = description;
 		this.contextValue = status === 'running' ? 'script-running' : 'script-history';
 		this.iconPath = this.getIcon();
+		this.command = {
+			command: 'npm-quick.viewScriptOutput',
+			title: 'View Output',
+			arguments: [this]
+		};
 	}
 
 	private getTooltip(): string {
 		if (this.status === 'running') {
-			return `🔄 ${this.script}: ${this.description} (En ejecución)`;
+			return `🔄 ${this.script}: ${this.description} (${t('running')})`;
 		} else if (this.status === 'completed') {
-			return `✓ ${this.script}: ${this.description} (Completado)`;
+			return `✓ ${this.script}: ${this.description} (${t('completed')})`;
 		} else {
-			return `✗ ${this.script}: ${this.description} (Fallido)`;
+			return `✗ ${this.script}: ${this.description} (${t('failed')})`;
 		}
 	}
 
@@ -104,7 +111,7 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 		});
 	}
 
-	addRunningScript(scriptName: string, command: string, workspacePath: string) {
+	addRunningScript(scriptName: string, command: string, workspacePath: string): string {
 		const id = `${scriptName}-${Date.now()}`;
 		const entry: ScriptHistoryEntry = {
 			id,
@@ -112,10 +119,24 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 			command,
 			status: 'running',
 			startTime: new Date(),
-			workspacePath
+			workspacePath,
+			output: `▶ ${t('executing')}: ${command}\n\n`
 		};
 		this.history.set(id, entry);
 		this.refresh();
+		return id;
+	}
+
+	appendOutput(id: string, text: string) {
+		const entry = this.history.get(id);
+		if (entry) {
+			entry.output += text;
+		}
+	}
+
+	getOutput(id: string): string {
+		const entry = this.history.get(id);
+		return entry ? entry.output : '';
 	}
 
 	removeRunningScript(scriptName: string, success: boolean = true) {
@@ -147,13 +168,13 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 		const packageManager = await detectPackageManager(item.workspacePath);
 		const command = getScriptCommand(item.script, packageManager);
 
-		await this.outputProvider.executeCommand(command, item.workspacePath, item.script);
+		await this.outputProvider.executeCommand(command, item.workspacePath, item.script, item.id);
 	}
 
-	async executeScriptByName(scriptName: string, workspacePath: string): Promise<void> {
+	async executeScriptByName(scriptName: string, workspacePath: string, scriptId?: string): Promise<void> {
 		const packageManager = await detectPackageManager(workspacePath);
 		const command = getScriptCommand(scriptName, packageManager);
 
-		await this.outputProvider.executeCommand(command, workspacePath, scriptName);
+		await this.outputProvider.executeCommand(command, workspacePath, scriptName, scriptId);
 	}
 }
