@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { spawn } from 'child_process';
 import { readPackageJson, detectPackageManager, getScriptCommand } from './packageManager';
 import { detectScriptType, getScriptTypeLabel } from './scriptIcons';
 import { ScriptsTreeDataProvider, ScriptItem } from './scriptsTreeDataProvider';
@@ -14,12 +13,27 @@ export function activate(context: vscode.ExtensionContext) {
 	// Create and register the output view provider
 	outputProvider = new OutputViewProvider(context);
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(OutputViewProvider.viewType, outputProvider)
+		vscode.window.registerWebviewViewProvider(OutputViewProvider.viewType, outputProvider, {
+			webviewOptions: { retainContextWhenHidden: true }
+		})
 	);
 
 	// Create and register the tree data provider
 	treeDataProvider = new ScriptsTreeDataProvider(context, outputProvider);
 	vscode.window.registerTreeDataProvider('npm-quick.scriptsView', treeDataProvider);
+
+	// Set up callbacks for process lifecycle
+	outputProvider.setProcessCallbacks(
+		(scriptName: string, command: string) => {
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (workspaceFolders) {
+				treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath);
+			}
+		},
+		(scriptName: string) => {
+			treeDataProvider.removeRunningScript(scriptName);
+		}
+	);
 
 	// Register commands
 	const runScriptDisposable = vscode.commands.registerCommand('npm-quick.runScript', async () => {
@@ -36,12 +50,16 @@ export function activate(context: vscode.ExtensionContext) {
 		treeDataProvider.refresh();
 	});
 
+	const addScriptDisposable = vscode.commands.registerCommand('npm-quick.addScript', async () => {
+		await runScriptCommand(outputProvider);
+	});
+
 	// Refresh tree when workspace changes
 	const workspaceChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(() => {
 		treeDataProvider.refresh();
 	});
 
-	context.subscriptions.push(runScriptDisposable, executeScriptDisposable, refreshDisposable, workspaceChangeDisposable);
+	context.subscriptions.push(runScriptDisposable, executeScriptDisposable, refreshDisposable, addScriptDisposable, workspaceChangeDisposable);
 }
 
 async function runScriptCommand(outputProvider: OutputViewProvider): Promise<void> {
@@ -88,31 +106,7 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 	const command = getScriptCommand(selectedScript.script, packageManager);
 
 	// Execute in output view
-	outputProvider.reveal();
-	outputProvider.clear();
-	outputProvider.append(`▶ Ejecutando: ${command}\n\n`);
-
-	try {
-		const [cmd, ...args] = command.split(' ');
-		const process = spawn(cmd, args, {
-			cwd: workspacePath,
-			shell: true,
-		});
-
-		process.stdout.on('data', (data) => {
-			outputProvider.append(data.toString());
-		});
-
-		process.stderr.on('data', (data) => {
-			outputProvider.append(data.toString());
-		});
-
-		process.on('close', (code) => {
-			outputProvider.append(`\n\n✓ Proceso completado con código: ${code}\n`);
-		});
-	} catch (error) {
-		outputProvider.append(`\n✗ Error: ${error}\n`);
-	}
+	await outputProvider.executeCommand(command, workspacePath, selectedScript.script);
 }
 
 export function deactivate() {}

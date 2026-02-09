@@ -49,6 +49,11 @@
     "views": {
       "npm-quick-scripts": [
         {
+          "id": "npm-quick.scriptsView",
+          "name": "Scripts",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
           "id": "npm-quick.outputView",
           "name": "Output",
           "when": "workspaceFolderCount > 0",
@@ -70,9 +75,28 @@
         "command": "npm-quick.refreshScripts",
         "title": "Refresh Scripts",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "npm-quick.addScript",
+        "title": "Add Script",
+        "icon": "$(add)"
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "npm-quick.addScript",
+          "group": "navigation",
+          "when": "view == npm-quick.scriptsView"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "npm-quick.executeScript",
+          "group": "inline",
+          "when": "view == npm-quick.scriptsView && viewItem == script"
+        }
+      ]
     },
     "keybindings": [
       {
