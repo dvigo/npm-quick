@@ -4,6 +4,18 @@ import { readPackageJson, detectPackageManager, getScriptCommand } from './packa
 import { detectScriptType, getScriptTypeLabel } from './scriptIcons';
 import { OutputViewProvider } from './outputViewProvider';
 
+export type ScriptStatus = 'running' | 'completed' | 'failed';
+
+export interface ScriptHistoryEntry {
+	id: string;
+	scriptName: string;
+	command: string;
+	status: ScriptStatus;
+	startTime: Date;
+	endTime?: Date;
+	workspacePath: string;
+}
+
 export class ScriptItem extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
@@ -11,19 +23,42 @@ export class ScriptItem extends vscode.TreeItem {
 		public readonly description: string,
 		public readonly scriptType: string,
 		public readonly workspacePath: string,
+		public readonly status: ScriptStatus,
+		public readonly id: string,
 		collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
 	) {
 		super(label, collapsibleState);
-		this.tooltip = `${script}: ${description}`;
+		this.tooltip = this.getTooltip();
 		this.description = description;
-		this.contextValue = 'script';
+		this.contextValue = status === 'running' ? 'script-running' : 'script-history';
+		this.iconPath = this.getIcon();
+	}
+
+	private getTooltip(): string {
+		if (this.status === 'running') {
+			return `🔄 ${this.script}: ${this.description} (En ejecución)`;
+		} else if (this.status === 'completed') {
+			return `✓ ${this.script}: ${this.description} (Completado)`;
+		} else {
+			return `✗ ${this.script}: ${this.description} (Fallido)`;
+		}
+	}
+
+	private getIcon(): vscode.ThemeIcon {
+		if (this.status === 'running') {
+			return new vscode.ThemeIcon('loading~spin', new vscode.ThemeColor('charts.blue'));
+		} else if (this.status === 'completed') {
+			return new vscode.ThemeIcon('pass', new vscode.ThemeColor('charts.green'));
+		} else {
+			return new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.red'));
+		}
 	}
 }
 
 export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptItem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<ScriptItem | undefined | null | void> = new vscode.EventEmitter<ScriptItem | undefined | null | void>();
 	readonly onDidChangeTreeData: vscode.Event<ScriptItem | undefined | null | void> = this._onDidChangeTreeData.event;
-	private runningScripts: Map<string, ScriptItem> = new Map();
+	private history: Map<string, ScriptHistoryEntry> = new Map();
 
 	constructor(private context: vscode.ExtensionContext, private outputProvider: OutputViewProvider) {}
 
@@ -40,26 +75,71 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 			return [];
 		}
 
-		// Return only running scripts
-		return Array.from(this.runningScripts.values());
+		// Return all history entries (running and completed)
+		const items: ScriptItem[] = [];
+		for (const entry of this.history.values()) {
+			const scriptType = detectScriptType(entry.scriptName);
+			const typeLabel = getScriptTypeLabel(scriptType);
+			
+			const item = new ScriptItem(
+				`${typeLabel}  ${entry.scriptName}`,
+				entry.scriptName,
+				entry.command,
+				scriptType,
+				entry.workspacePath,
+				entry.status,
+				entry.id
+			);
+			items.push(item);
+		}
+
+		// Sort: running first, then by start time (newest first)
+		return items.sort((a, b) => {
+			if (a.status === 'running' && b.status !== 'running') return -1;
+			if (a.status !== 'running' && b.status === 'running') return 1;
+			
+			const entryA = this.history.get(a.id)!;
+			const entryB = this.history.get(b.id)!;
+			return entryB.startTime.getTime() - entryA.startTime.getTime();
+		});
 	}
 
 	addRunningScript(scriptName: string, command: string, workspacePath: string) {
-		const scriptType = detectScriptType(scriptName);
-		const typeLabel = getScriptTypeLabel(scriptType);
-		const item = new ScriptItem(
-			`${typeLabel}  ${scriptName}`,
+		const id = `${scriptName}-${Date.now()}`;
+		const entry: ScriptHistoryEntry = {
+			id,
 			scriptName,
 			command,
-			scriptType,
+			status: 'running',
+			startTime: new Date(),
 			workspacePath
-		);
-		this.runningScripts.set(scriptName, item);
+		};
+		this.history.set(id, entry);
 		this.refresh();
 	}
 
-	removeRunningScript(scriptName: string) {
-		this.runningScripts.delete(scriptName);
+	removeRunningScript(scriptName: string, success: boolean = true) {
+		// Find the running entry for this script
+		for (const [id, entry] of this.history.entries()) {
+			if (entry.scriptName === scriptName && entry.status === 'running') {
+				entry.status = success ? 'completed' : 'failed';
+				entry.endTime = new Date();
+				break;
+			}
+		}
+		this.refresh();
+	}
+
+	clearHistory() {
+		// Keep only running scripts
+		const runningEntries = Array.from(this.history.entries()).filter(([_, entry]) => entry.status === 'running');
+		this.history.clear();
+		runningEntries.forEach(([id, entry]) => this.history.set(id, entry));
+		this.refresh();
+	}
+
+	removeHistoryItem(id: string) {
+		this.history.delete(id);
 		this.refresh();
 	}
 

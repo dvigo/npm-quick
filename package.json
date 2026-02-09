@@ -80,21 +80,36 @@
         "command": "npm-quick.addScript",
         "title": "Add Script",
         "icon": "$(add)"
+      },
+      {
+        "command": "npm-quick.clearHistory",
+        "title": "Clear History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "npm-quick.removeHistoryItem",
+        "title": "Remove from History",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "npm-quick.addScript",
-          "group": "navigation",
+          "group": "navigation@1",
+          "when": "view == npm-quick.scriptsView"
+        },
+        {
+          "command": "npm-quick.clearHistory",
+          "group": "navigation@2",
           "when": "view == npm-quick.scriptsView"
         }
       ],
       "view/item/context": [
         {
-          "command": "npm-quick.executeScript",
+          "command": "npm-quick.removeHistoryItem",
           "group": "inline",
-          "when": "view == npm-quick.scriptsView && viewItem == script"
+          "when": "view == npm-quick.scriptsView && viewItem == script-history"
         }
       ]
     },

@@ -7,7 +7,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	private currentProcess?: ChildProcess;
 	private currentScriptName?: string;
 	private onProcessStart?: (scriptName: string, command: string) => void;
-	private onProcessEnd?: (scriptName: string) => void;
+	private onProcessEnd?: (scriptName: string, success: boolean) => void;
 
 	constructor(private context: vscode.ExtensionContext) {}
 
@@ -216,13 +216,19 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 
 			process.on('close', (code) => {
 				const scriptName = this.currentScriptName;
+				const success = code === 0;
 				this.currentProcess = undefined;
 				this.currentScriptName = undefined;
 				this.disableInput();
-				this.append(`\n\n✓ Proceso completado con código: ${code}\n`);
+				
+				if (success) {
+					this.append(`\n\n✓ Proceso completado con código: ${code}\n`);
+				} else {
+					this.append(`\n\n✗ Proceso terminó con código: ${code}\n`);
+				}
 				
 				if (scriptName && this.onProcessEnd) {
-					this.onProcessEnd(scriptName);
+					this.onProcessEnd(scriptName, success);
 				}
 			});
 
@@ -234,7 +240,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				this.append(`\n✗ Error: ${error.message}\n`);
 				
 				if (scriptName && this.onProcessEnd) {
-					this.onProcessEnd(scriptName);
+					this.onProcessEnd(scriptName, false);
 				}
 			});
 		} catch (error) {
@@ -242,14 +248,14 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			const scriptName = this.currentScriptName;
 			this.currentScriptName = undefined;
 			if (scriptName && this.onProcessEnd) {
-				this.onProcessEnd(scriptName);
+				this.onProcessEnd(scriptName, false);
 			}
 		}
 	}
 
 	public setProcessCallbacks(
 		onStart: (scriptName: string, command: string) => void,
-		onEnd: (scriptName: string) => void
+		onEnd: (scriptName: string, success: boolean) => void
 	) {
 		this.onProcessStart = onStart;
 		this.onProcessEnd = onEnd;
@@ -277,7 +283,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			this.append('\n\n⏹ Proceso detenido por el usuario\n');
 			
 			if (scriptName && this.onProcessEnd) {
-				this.onProcessEnd(scriptName);
+				this.onProcessEnd(scriptName, false);
 			}
 		}
 	}

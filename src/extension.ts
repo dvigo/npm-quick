@@ -30,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
 				treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath);
 			}
 		},
-		(scriptName: string) => {
-			treeDataProvider.removeRunningScript(scriptName);
+		(scriptName: string, success: boolean) => {
+			treeDataProvider.removeRunningScript(scriptName, success);
 		}
 	);
 
@@ -54,12 +54,31 @@ export function activate(context: vscode.ExtensionContext) {
 		await runScriptCommand(outputProvider);
 	});
 
+	const clearHistoryDisposable = vscode.commands.registerCommand('npm-quick.clearHistory', () => {
+		treeDataProvider.clearHistory();
+		vscode.window.showInformationMessage('Historial limpiado');
+	});
+
+	const removeHistoryItemDisposable = vscode.commands.registerCommand('npm-quick.removeHistoryItem', (item: ScriptItem) => {
+		if (item) {
+			treeDataProvider.removeHistoryItem(item.id);
+		}
+	});
+
 	// Refresh tree when workspace changes
 	const workspaceChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(() => {
 		treeDataProvider.refresh();
 	});
 
-	context.subscriptions.push(runScriptDisposable, executeScriptDisposable, refreshDisposable, addScriptDisposable, workspaceChangeDisposable);
+	context.subscriptions.push(
+		runScriptDisposable, 
+		executeScriptDisposable, 
+		refreshDisposable, 
+		addScriptDisposable, 
+		clearHistoryDisposable, 
+		removeHistoryItemDisposable, 
+		workspaceChangeDisposable
+	);
 }
 
 async function runScriptCommand(outputProvider: OutputViewProvider): Promise<void> {
