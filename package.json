@@ -37,12 +37,43 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "npm-quick-scripts",
+          "title": "npm quick",
+          "icon": "$(play)"
+        }
+      ]
+    },
+    "views": {
+      "npm-quick-scripts": [
+        {
+          "id": "npm-quick.outputView",
+          "name": "Output",
+          "when": "workspaceFolderCount > 0",
+          "type": "webview"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "npm-quick.runScript",
         "title": "npm quick: Run Script"
+      },
+      {
+        "command": "npm-quick.executeScript",
+        "title": "Run",
+        "icon": "$(play)"
+      },
+      {
+        "command": "npm-quick.refreshScripts",
+        "title": "Refresh Scripts",
+        "icon": "$(refresh)"
       }
     ],
+    "menus": {
+    },
     "keybindings": [
       {
         "command": "npm-quick.runScript",
