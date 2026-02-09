@@ -4,6 +4,43 @@ All notable changes to the "npm quick" extension will be documented in this file
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.1.0] - 2026-02-09
+
+### Added
+- **Interactive Output Panel**: Dedicated webview for script execution output with real-time updates
+- **Script Execution History**: Track all executed scripts with status indicators:
+  - 🔵 Running (blue spinning indicator)
+  - ✅ Completed (green check mark)
+  - ❌ Failed (red X mark)
+- **Process Control**: Stop button to gracefully terminate running scripts with SIGINT (Ctrl+C)
+- **Input Support**: Text input field for interactive scripts requiring stdin
+- **Execution History Management**:
+  - View logs of any previously executed script by clicking on it
+  - Delete individual history entries with confirmation
+  - Clear all history at once
+- **Internationalization (i18n)**: Full language support for 6 languages:
+  - 🇪🇸 Spanish (Español)
+  - 🇬🇧 English
+  - 🇫🇷 French (Français)
+  - 🇩🇪 German (Deutsch)
+  - 🇵🇹 Portuguese (Português)
+  - 🇮🇹 Italian (Italiano)
+- **State Management**: 
+  - Buttons intelligently enable/disable based on context
+  - Stop button only available when process is running
+  - Delete button only available when script is selected
+  - Output persistence when switching between scripts
+
+### Changed
+- Output execution moved from terminal to dedicated NPM QUICK panel for better control and history
+- Process termination now uses SIGINT signal for graceful shutdown
+- UI redesigned with webview-based output display
+
+### Improved
+- Enhanced user experience with persistent output logs
+- Better visual feedback for button states
+- Cleaner execution panel with dedicated history tracking
+
 ## [0.0.7] - 2026-02-07
 
 ### Added

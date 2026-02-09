@@ -42,6 +42,40 @@ We welcome feature suggestions! Please describe:
 4. **Start development**
    - Press `F5` to launch the extension in debug mode
    - Open a project with a `package.json` to test
+   - The extension will run in a new VS Code window with the extension loaded
+
+## Project Structure
+
+```
+src/
+├── extension.ts              # Main extension activation and command registration
+├── outputViewProvider.ts     # Webview provider for script output display
+├── scriptsTreeDataProvider.ts # Tree data provider for execution history
+├── packageManager.ts         # Package manager detection and script extraction
+├── scriptIcons.ts            # Script type detection and icon assignment
+├── i18n.ts                   # Internationalization system
+└── test/
+    └── extension.test.ts     # Extension tests
+```
+
+## Key Components
+
+### OutputViewProvider
+- Manages the webview for displaying script output
+- Handles process execution and termination
+- Manages output persistence across script switches
+- Bidirectional messaging between extension and webview
+
+### ScriptsTreeDataProvider
+- Maintains execution history with status tracking
+- Stores output logs for each executed script
+- Provides tree view items with status indicators
+- Manages history persistence
+
+### i18n System
+- Supports 6 languages (ES, EN, FR, DE, PT, IT)
+- Auto-detects language from VS Code settings
+- Centralized translation management
 
 ## Making Changes
 

@@ -12,7 +12,13 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 🚀 **Automatic Package Manager Detection** - Automatically detects whether your project uses npm, pnpm, or yarn based on lock files
 
-⚡ **Integrated Terminal Execution** - Executes scripts directly in VS Code's integrated terminal
+📊 **Interactive Output Panel** - Dedicated execution panel with real-time output, input support, and process control
+
+⏹️ **Process Control** - Stop running scripts gracefully with Ctrl+C or delete execution history entries
+
+📜 **Execution History** - Track all executed scripts with status indicators (running, completed, failed) and view previous output logs
+
+🌍 **Multilingual Support** - Full internationalization support for Spanish, English, French, German, Portuguese, and Italian
 
 💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
 
@@ -36,21 +42,32 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 6. The script executes in the integrated terminal
 
 ## Usage Examples
+## Usage Examples
 
-### Running Tests
-```
-Cmd+Shift+P → "npm quick: Run Script" → Select "test"
-```
+### Running a Script
+1. Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
+2. Select the script you want to run
+3. Output appears in the NPM QUICK panel with real-time updates
 
-### Running Build
-```
-Cmd+Shift+P → "npm quick: Run Script" → Select "build"
-```
+### Stopping a Running Script
+1. While a script is running, the ⏹️ Stop button appears in the NPM QUICK panel
+2. Click the Stop button to terminate the process with Ctrl+C
 
-### Running Dev Server
-```
-Cmd+Shift+P → "npm quick: Run Script" → Select "dev"
-```
+### Viewing Script History
+1. All executed scripts appear in the Scripts view with status indicators:
+   - 🔵 **Running**: Script is currently executing
+   - ✅ **Completed**: Script finished successfully (exit code 0)
+   - ❌ **Failed**: Script failed (non-zero exit code)
+2. Click any script to view its output logs
+3. Click the 🗑️ Delete button to remove entries from history
+
+### Interactive Scripts
+- Scripts that require input (e.g., prompts) show an input field in the NPM QUICK panel
+- Type and press Enter to send input to the running script
+
+### Clearing History
+1. In the Scripts view, click the clear icon in the toolbar
+2. Confirm the action to remove all execution history
 
 ## How It Works
 
@@ -64,7 +81,10 @@ The extension:
    - `yarn.lock` → uses `yarn <script>`
    - `package-lock.json` → uses `npm run <script>`
    - *No lock file* → defaults to `npm run <script>`
-5. **Executes** the selected script in the integrated terminal
+5. **Executes** the selected script in a dedicated NPM QUICK output panel
+6. **Tracks** execution status and stores output in history
+7. **Allows** interactive control (stop, clear history, view logs)
+8. **Displays** UI in your configured language
 
 ## Supported Package Managers
 
@@ -88,8 +108,9 @@ The extension:
 
 - **Search Filtering**: Start typing in the quick pick to filter scripts by name
 - **Partial Matches**: The quick pick searches both script names and their descriptions
-- **Terminal Reuse**: If a terminal is already open, the script runs in the active terminal
-- **Output Viewing**: Terminal output is automatically visible in VS Code
+- **Switch Between Scripts**: Click on different scripts in the history to view their output logs instantly
+- **Stop Long-Running Scripts**: Use the Stop button instead of killing the terminal to gracefully terminate processes
+- **Language Auto-Detection**: The UI automatically displays in your VS Code language preference
 
 ## Troubleshooting
 
@@ -106,7 +127,17 @@ The extension:
 ### Script doesn't execute
 - Check that the script syntax is correct in `package.json`
 - Verify that required dependencies for the script are installed
-- Check the terminal output for error messages
+- Check the NPM QUICK panel output for error messages
+
+### Stop button not working
+- Ensure the process is actually running (button should be blue when active)
+- Some scripts may ignore SIGINT signals - verify the script handles interrupts
+- If the script doesn't stop, the process may be blocking signal handling
+
+### Output not persisting when switching scripts
+- The extension stores output for all executed scripts
+- Output is kept in memory during the session
+- Restarting VS Code will clear the execution history
 
 ## Development
 
