@@ -111,8 +111,12 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 		});
 	}
 
-	addRunningScript(scriptName: string, command: string, workspacePath: string): string {
-		const id = `${scriptName}-${Date.now()}`;
+	addRunningScript(scriptName: string, command: string, workspacePath: string, id?: string): string {
+		// Use provided ID or generate new one
+		if (!id) {
+			id = `${scriptName}-${Date.now()}`;
+		}
+		
 		const entry: ScriptHistoryEntry = {
 			id,
 			scriptName,
@@ -120,7 +124,7 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 			status: 'running',
 			startTime: new Date(),
 			workspacePath,
-			output: `▶ ${t('executing')}: ${command}\n\n`
+			output: ''
 		};
 		this.history.set(id, entry);
 		this.refresh();
@@ -137,6 +141,10 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 	getOutput(id: string): string {
 		const entry = this.history.get(id);
 		return entry ? entry.output : '';
+	}
+
+	getEntry(id: string): ScriptHistoryEntry | undefined {
+		return this.history.get(id);
 	}
 
 	removeRunningScript(scriptName: string, success: boolean = true) {

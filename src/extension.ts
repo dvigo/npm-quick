@@ -25,12 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Set up callbacks for process lifecycle
 	outputProvider.setProcessCallbacks(
-		(scriptName: string, command: string) => {
+		(scriptName: string, command: string, scriptId?: string) => {
 			const workspaceFolders = vscode.workspace.workspaceFolders;
 			if (workspaceFolders) {
-				const id = treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath);
-				// Update the current script ID in the output provider
-				(outputProvider as any).currentScriptId = id;
+				// Use the provided scriptId instead of generating a new one
+				treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath, scriptId);
 			}
 		},
 		(scriptName: string, success: boolean) => {
@@ -95,8 +94,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const viewScriptOutputDisposable = vscode.commands.registerCommand('npm-quick.viewScriptOutput', async (item: ScriptItem) => {
 		if (item) {
 			const output = treeDataProvider.getOutput(item.id);
+			const entry = treeDataProvider.getEntry(item.id);
+			const isRunning = entry?.status === 'running';
 			await outputProvider.reveal();
-			outputProvider.loadOutput(output, item.id);
+			outputProvider.loadOutput(output, item.id, isRunning, entry?.scriptName);
 		}
 	});
 
@@ -165,11 +166,8 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 	const packageManager = await detectPackageManager(workspacePath);
 	const command = getScriptCommand(selectedScript.script, packageManager);
 
-	// Create a temporary ID for tracking
-	const tempId = `${selectedScript.script}-${Date.now()}`;
-
-	// Execute in output view
-	await outputProvider.executeCommand(command, workspacePath, selectedScript.script, tempId);
+	// Execute in output view (ID will be generated automatically)
+	await outputProvider.executeCommand(command, workspacePath, selectedScript.script);
 }
 
 export function deactivate() {}

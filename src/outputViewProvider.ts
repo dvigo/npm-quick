@@ -5,10 +5,10 @@ import { t } from './i18n';
 export class OutputViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'npm-quick.outputView';
 	private view?: vscode.WebviewView;
-	private currentProcess?: ChildProcess;
+	private processes: Map<string, ChildProcess> = new Map();
 	private currentScriptName?: string;
 	private currentScriptId?: string;
-	private onProcessStart?: (scriptName: string, command: string) => void;
+	private onProcessStart?: (scriptName: string, command: string, scriptId?: string) => void;
 	private onProcessEnd?: (scriptName: string, success: boolean) => void;
 	private onRemoveHistoryItem?: (id: string) => void;
 	private onAppendOutput?: (id: string, text: string) => void;
@@ -31,8 +31,11 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 
 		// Handle messages from webview
 		webviewView.webview.onDidReceiveMessage((message) => {
-			if (message.command === 'input' && this.currentProcess && this.currentProcess.stdin) {
-				this.currentProcess.stdin.write(message.text + '\n');
+			if (message.command === 'input' && this.currentScriptId) {
+				const process = this.processes.get(this.currentScriptId);
+				if (process && process.stdin) {
+					process.stdin.write(message.text + '\n');
+				}
 			} else if (message.command === 'stop') {
 				this.stopCurrentProcess();
 			} else if (message.command === 'clearAndRemove') {
@@ -283,16 +286,25 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 
 	public async executeCommand(command: string, workspacePath: string, scriptName?: string, scriptId?: string) {
 		await this.reveal();
-		this.clear();
-		this.append(`▶ ${t('executing')}: ${command}\n\n`);
-
+		
+		// Generate ID if not provided
+		if (!scriptId && scriptName) {
+			scriptId = `${scriptName}-${Date.now()}`;
+		}
+		
 		this.currentScriptName = scriptName;
 		this.currentScriptId = scriptId;
+		
+		// Create history entry BEFORE first append
+		if (scriptName && this.onProcessStart && scriptId) {
+			this.onProcessStart(scriptName, command, scriptId);
+		}
+		
+		this.clear();
+		this.append(`▶ ${t('executing')}: ${command}\n\n`);
+		
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'enableDelete' });
-		}
-		if (scriptName && this.onProcessStart) {
-			this.onProcessStart(scriptName, command);
 		}
 
 		try {
@@ -303,7 +315,11 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 				detached: false,
 			});
 
-			this.currentProcess = process;
+			// Store process by scriptId
+			if (scriptId) {
+				this.processes.set(scriptId, process);
+			}
+			
 			this.enableInput();
 			this.enableStop();
 
@@ -318,10 +334,17 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			process.on('close', (code) => {
 				const scriptName = this.currentScriptName;
 				const success = code === 0;
-				this.currentProcess = undefined;
-				this.currentScriptName = undefined;
-				this.disableInput();
-				this.disableStop();
+				
+				// Remove process from map
+				if (scriptId) {
+					this.processes.delete(scriptId);
+				}
+				
+				// Only update UI if this is the currently viewed process
+				if (this.currentScriptId === scriptId) {
+					this.disableInput();
+					this.disableStop();
+				}
 				
 				if (success) {
 					this.append(`\n\n✓ ${t('processCompleted')}: ${code}\n`);
@@ -336,10 +359,18 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 
 			process.on('error', (error) => {
 				const scriptName = this.currentScriptName;
-				this.currentProcess = undefined;
-				this.currentScriptName = undefined;
-				this.disableInput();
-				this.disableStop();
+				
+				// Remove process from map
+				if (scriptId) {
+					this.processes.delete(scriptId);
+				}
+				
+				// Only update UI if this is the currently viewed process
+				if (this.currentScriptId === scriptId) {
+					this.disableInput();
+					this.disableStop();
+				}
+				
 				this.append(`\n✗ ${t('error')}: ${error.message}\n`);
 				
 				if (scriptName && this.onProcessEnd) {
@@ -349,7 +380,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		} catch (error) {
 			this.append(`\n✗ ${t('error')}: ${error}\n`);
 			const scriptName = this.currentScriptName;
-			this.currentScriptName = undefined;
+			
 			if (scriptName && this.onProcessEnd) {
 				this.onProcessEnd(scriptName, false);
 			}
@@ -357,7 +388,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	public setProcessCallbacks(
-		onStart: (scriptName: string, command: string) => void,
+		onStart: (scriptName: string, command: string, scriptId?: string) => void,
 		onEnd: (scriptName: string, success: boolean) => void,
 		onRemove?: (id: string) => void,
 		onAppendOutput?: (id: string, text: string) => void
@@ -368,13 +399,24 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		this.onAppendOutput = onAppendOutput;
 	}
 
-	public loadOutput(output: string, scriptId?: string) {
+	public loadOutput(output: string, scriptId?: string, isRunning: boolean = false, scriptName?: string) {
 		this.clear();
+		
+		// Update current script tracking
 		this.currentScriptId = scriptId;
+		this.currentScriptName = isRunning ? scriptName : undefined;
+		
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'append', text: output });
 			this.view.webview.postMessage({ command: 'enableDelete' });
-			this.view.webview.postMessage({ command: 'disableStop' });
+			
+			if (isRunning) {
+				this.view.webview.postMessage({ command: 'enableStop' });
+				this.view.webview.postMessage({ command: 'enableInput' });
+			} else {
+				this.view.webview.postMessage({ command: 'disableStop' });
+				this.view.webview.postMessage({ command: 'disableInput' });
+			}
 		}
 	}
 
@@ -411,29 +453,31 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private stopCurrentProcess() {
-		if (this.currentProcess) {
-			// Send SIGINT (Ctrl+C) to the process
-			try {
-				this.currentProcess.kill('SIGINT');
-			} catch (error) {
-				// If SIGINT fails, try SIGTERM as fallback
+		if (this.currentScriptId) {
+			const process = this.processes.get(this.currentScriptId);
+			if (process) {
+				// Send SIGINT (Ctrl+C) to the process
 				try {
-					this.currentProcess.kill('SIGTERM');
-				} catch (e) {
-					// Process might already be dead
+					process.kill('SIGINT');
+				} catch (error) {
+					// If SIGINT fails, try SIGTERM as fallback
+					try {
+						process.kill('SIGTERM');
+					} catch (e) {
+						// Process might already be dead
+					}
 				}
-			}
-			
-			const scriptName = this.currentScriptName;
-			this.currentProcess = undefined;
-			this.currentScriptName = undefined;
-			this.currentScriptId = undefined;
-			this.disableInput();
-			this.disableStop();
-			this.append(`\n\n⏹ ${t('processStopped')}\n`);
-			
-			if (scriptName && this.onProcessEnd) {
-				this.onProcessEnd(scriptName, false);
+				
+				const scriptName = this.currentScriptName;
+				this.processes.delete(this.currentScriptId);
+				this.currentScriptName = undefined;
+				this.disableInput();
+				this.disableStop();
+				this.append(`\n\n⏹ ${t('processStopped')}\n`);
+				
+				if (scriptName && this.onProcessEnd) {
+					this.onProcessEnd(scriptName, false);
+				}
 			}
 		}
 	}
@@ -447,6 +491,8 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		this.clear();
 		if (this.view) {
 			this.view.webview.postMessage({ command: 'disableDelete' });
+			this.view.webview.postMessage({ command: 'disableStop' });
+			this.view.webview.postMessage({ command: 'disableInput' });
 		}
 	}
 }
