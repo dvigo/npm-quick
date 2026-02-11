@@ -4,6 +4,21 @@ All notable changes to the "npm quick" extension will be documented in this file
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.1.1] - 2026-02-11
+
+### Fixed
+- **Multiple Processes Management**: Fixed issue where logs were lost when switching between running processes
+- **Process State Tracking**: Implemented proper process tracking using Map by unique script ID instead of single process reference
+- **UI Controls State**: Fixed UI controls (Stop/Input buttons) not updating correctly when switching between processes
+- **Process Interaction**: Enabled stopping and interacting with specific processes instead of only the last executed one
+- **Log Persistence**: Ensured all process logs are properly saved and accessible when viewing different processes
+
+### Technical Improvements
+- Process lifecycle callbacks now include scriptId parameter for better tracking
+- History entries are created before first output append to prevent log loss
+- Process termination and cleanup now work correctly for individual processes
+- UI state updates are conditional based on currently viewed process
+
 ## [0.1.0] - 2026-02-09
 
 ### Added

@@ -18,6 +18,8 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 📜 **Execution History** - Track all executed scripts with status indicators (running, completed, failed) and view previous output logs
 
+🔄 **Multiple Processes Support** - Run multiple scripts simultaneously and switch between their outputs without losing logs
+
 🌍 **Multilingual Support** - Full internationalization support for Spanish, English, French, German, Portuguese, and Italian
 
 💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
@@ -60,6 +62,14 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
    - ❌ **Failed**: Script failed (non-zero exit code)
 2. Click any script to view its output logs
 3. Click the 🗑️ Delete button to remove entries from history
+
+### Running Multiple Scripts Simultaneously
+1. Execute multiple scripts at the same time (e.g., dev server + build watcher)
+2. All running scripts appear in the Scripts view with 🔵 indicators
+3. Click on any script to view its real-time output logs
+4. Each script maintains its own output history and can be controlled independently
+5. Stop individual scripts using the ⏹️ Stop button when viewing their output
+6. Send input to specific scripts when they require interactive input
 
 ### Interactive Scripts
 - Scripts that require input (e.g., prompts) show an input field in the NPM QUICK panel
