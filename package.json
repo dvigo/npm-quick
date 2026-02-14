@@ -132,6 +132,11 @@
         "command": "npm-quick.runScript",
         "key": "ctrl+alt+n",
         "mac": "cmd+alt+n"
+      },
+      {
+        "command": "workbench.view.extension.npm-quick-scripts",
+        "key": "ctrl+.",
+        "mac": "ctrl+."
       }
     ]
   },
