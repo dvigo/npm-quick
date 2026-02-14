@@ -7,6 +7,7 @@ import { t } from './i18n';
 
 let treeDataProvider: ScriptsTreeDataProvider;
 let outputProvider: OutputViewProvider;
+let statusBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Activating npm quick extension');
@@ -105,6 +106,18 @@ export function activate(context: vscode.ExtensionContext) {
 		outputProvider.stopCurrentScript();
 	});
 
+	const openPanelDisposable = vscode.commands.registerCommand('npm-quick.openPanel', async () => {
+		await vscode.commands.executeCommand('workbench.view.extension.npm-quick-scripts');
+	});
+
+	// Create status bar item
+	statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+	statusBarItem.text = '$(package)';
+	statusBarItem.tooltip = 'npm quick';
+	statusBarItem.command = 'npm-quick.openPanel';
+	statusBarItem.show();
+	context.subscriptions.push(statusBarItem);
+
 	// Refresh tree when workspace changes
 	const workspaceChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(() => {
 		treeDataProvider.refresh();
@@ -119,6 +132,7 @@ export function activate(context: vscode.ExtensionContext) {
 		removeHistoryItemDisposable,
 		viewScriptOutputDisposable,
 		stopScriptDisposable,
+		openPanelDisposable,
 		workspaceChangeDisposable
 	);
 }

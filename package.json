@@ -98,6 +98,11 @@
       {
         "command": "npm-quick.stopScript",
         "title": "Stop Script",
+        "icon": "$(stop)"
+      },
+      {
+        "command": "npm-quick.openPanel",
+        "title": "npm quick: Open Panel",
         "icon": "$(debug-stop)"
       }
     ],
