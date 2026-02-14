@@ -4,6 +4,15 @@ All notable changes to the "npm quick" extension will be documented in this file
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.2.0] - 2026-02-14
+
+### Added
+- **Status Bar Integration**: Added status bar icon (📦) in the bottom bar to quickly open the npm quick panel
+- **Quick Panel Access**: New command `npm-quick.openPanel` for opening the panel programmatically
+
+### Improved
+- Better accessibility: Panel can now be opened from status bar, keyboard shortcut, or command palette
+
 ## [0.1.1] - 2026-02-11
 
 ### Fixed
