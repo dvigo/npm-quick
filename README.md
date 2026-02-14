@@ -24,7 +24,9 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 💻 **No Configuration Required** - Works out of the box with any project that has scripts in `package.json`
 
-⌨️ **Keyboard Shortcut** - Quick access with `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
+⌨️ **Keyboard Shortcuts** - Quick access with `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux), or `Ctrl+.` to open the panel
+
+🎯 **Status Bar Integration** - Quick access icon (📦) in the bottom status bar for one-click panel access
 
 ## Requirements
 
@@ -35,13 +37,12 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 1. **[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)**
 2. Open a project folder that contains a `package.json` with scripts
-3. **Option A (Keyboard Shortcut - Fastest)**:
-   - Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
-4. **Option B (Command Palette)**:
-   - Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
-   - Type "npm quick: Run Script"
-5. Select the script you want to run from the list
-6. The script executes in the integrated terminal
+3. **Choose your preferred access method**:
+   - **Option A (Status Bar Icon - Quickest)**: Click the 📦 icon in the bottom status bar
+   - **Option B (Keyboard Shortcut)**: Press `Ctrl+.` to open the panel, or `Cmd+Alt+N` (macOS) / `Ctrl+Alt+N` (Windows/Linux) to run a script
+   - **Option C (Command Palette)**: Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux), type "npm quick"
+4. Select the script you want to run from the Scripts view or use the Command Palette
+5. The script executes in the NPM QUICK output panel with real-time updates
 
 ## Usage Examples
 ## Usage Examples
@@ -113,6 +114,13 @@ The extension:
   - Windows/Linux: `Ctrl+Alt+N`
 - **Alternative**: Use Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and search for "npm quick"
 - **Description**: Displays a quick pick menu with all available scripts from `package.json`
+
+### npm quick: Open Panel
+- **Command ID**: `npm-quick.openPanel`
+- **Default Keybinding**: `Ctrl+.` (both macOS and Windows/Linux)
+- **Status Bar**: Click the 📦 icon in the bottom status bar
+- **Alternative**: Use Command Palette and search for "npm quick: Open Panel"
+- **Description**: Opens the NPM QUICK panel showing Scripts view and Output view
 
 ## Tips & Tricks
 
