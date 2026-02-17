@@ -69,24 +69,24 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		body {
 			margin: 0;
 			padding: 0;
-			font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-			font-size: 12px;
-			color: #d4d4d4;
-			background-color: #1e1e1e;
+			font-family: var(--vscode-editor-font-family, 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace);
+			font-size: var(--vscode-editor-font-size, 12px);
+			color: var(--vscode-editor-foreground);
+			background-color: var(--vscode-editor-background);
 			display: flex;
 			flex-direction: column;
 			height: 100vh;
 		}
 		#controls {
 			padding: 8px;
-			background-color: #252526;
-			border-bottom: 1px solid #3c3c3c;
+			background-color: var(--vscode-sideBar-background);
+			border-bottom: 1px solid var(--vscode-panel-border);
 			display: flex;
 			gap: 8px;
 		}
 		button {
-			background-color: #0e639c;
-			color: #ffffff;
+			background-color: var(--vscode-button-background);
+			color: var(--vscode-button-foreground);
 			border: none;
 			padding: 4px 12px;
 			cursor: pointer;
@@ -94,21 +94,24 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			font-size: 11px;
 		}
 		button:hover {
-			background-color: #1177bb;
+			background-color: var(--vscode-button-hoverBackground);
 		}
 		button.stop {
-			background-color: #a1260d;
+			background-color: var(--vscode-errorForeground);
+			color: var(--vscode-errorBackground, #ffffff);
+			border: 1px solid var(--vscode-errorBorder, var(--vscode-errorForeground));
 		}
 		button.stop:hover:not(:disabled) {
-			background-color: #c72e0d;
+			opacity: 0.85;
+			filter: brightness(1.1);
 		}
 		button.delete {
-			background-color: #6b7280;
-			color: #ffffff;
+			background-color: var(--vscode-button-secondaryBackground);
+			color: var(--vscode-button-secondaryForeground);
 			padding: 4px 8px;
 		}
 		button.delete:hover:not(:disabled) {
-			background-color: #9ca3af;
+			background-color: var(--vscode-button-secondaryHoverBackground);
 		}
 		button:disabled {
 			opacity: 0.5;
@@ -126,8 +129,8 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		}
 		#input-container {
 			padding: 8px;
-			background-color: #252526;
-			border-top: 1px solid #3c3c3c;
+			background-color: var(--vscode-sideBar-background);
+			border-top: 1px solid var(--vscode-panel-border);
 			display: none;
 		}
 		#input-container.active {
@@ -135,16 +138,16 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		}
 		input {
 			width: 100%;
-			background-color: #3c3c3c;
-			color: #d4d4d4;
-			border: 1px solid #3c3c3c;
+			background-color: var(--vscode-input-background);
+			color: var(--vscode-input-foreground);
+			border: 1px solid var(--vscode-input-border);
 			padding: 6px;
 			font-family: inherit;
 			font-size: 12px;
 		}
 		input:focus {
 			outline: none;
-			border-color: #007acc;
+			border-color: var(--vscode-focusBorder);
 		}
 		.modal {
 			display: none;
@@ -154,7 +157,8 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			top: 0;
 			width: 100%;
 			height: 100%;
-			background-color: rgba(0,0,0,0.4);
+			background-color: var(--vscode-editor-background, rgba(0,0,0,0.5));
+			opacity: 0.95;
 			justify-content: center;
 			align-items: center;
 		}
@@ -162,9 +166,9 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			display: flex;
 		}
 		.modal-content {
-			background-color: #252526;
+			background-color: var(--vscode-sideBar-background);
 			padding: 20px;
-			border: 1px solid #3c3c3c;
+			border: 1px solid var(--vscode-panel-border);
 			border-radius: 4px;
 			min-width: 300px;
 		}
@@ -176,6 +180,7 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		}
 		.modal-text {
 			margin-bottom: 12px;
+			color: var(--vscode-foreground);
 		}
 	</style>
 </head>

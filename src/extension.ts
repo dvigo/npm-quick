@@ -72,7 +72,14 @@ export function activate(context: vscode.ExtensionContext) {
 		);
 		
 		if (answer === t('yes')) {
+			const currentScriptId = outputProvider.getCurrentScriptId();
 			treeDataProvider.clearHistory();
+			
+			// Clear output if the current script is no longer in history (was removed)
+			if (currentScriptId && !treeDataProvider.hasHistoryItem(currentScriptId)) {
+				outputProvider.clear();
+			}
+			
 			vscode.window.showInformationMessage(t('historyCleared'));
 		}
 	});

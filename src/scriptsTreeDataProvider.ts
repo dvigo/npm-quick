@@ -172,6 +172,10 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 		this.refresh();
 	}
 
+	hasHistoryItem(id: string): boolean {
+		return this.history.has(id);
+	}
+
 	async executeScript(item: ScriptItem): Promise<void> {
 		const packageManager = await detectPackageManager(item.workspacePath);
 		const command = getScriptCommand(item.script, packageManager);
