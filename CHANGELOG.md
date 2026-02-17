@@ -4,6 +4,13 @@ All notable changes to the "npm quick" extension will be documented in this file
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.2.1] - 2026-02-17
+
+### Improved
+- **Output Panel Theming**: Replaced hardcoded colors with VS Code theme variables for proper theme support across all themes (light, dark, custom)
+- **Stop Button Contrast**: Improved stop button visibility and contrast for light themes
+- **Clear History Behavior**: Clear history now also clears output content when the displayed script is removed from history
+
 ## [0.2.0] - 2026-02-14
 
 ### Added
