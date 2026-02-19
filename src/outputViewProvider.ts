@@ -45,8 +45,10 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	public async reveal() {
+		// Always execute the command to open the panel, which will create the view if it doesn't exist
+		await vscode.commands.executeCommand('workbench.view.extension.npm-quick-scripts');
+		// If the view already exists, explicitly show it
 		if (this.view) {
-			await vscode.commands.executeCommand('workbench.view.extension.npm-quick-scripts');
 			this.view.show(true);
 		}
 	}
