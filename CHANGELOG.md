@@ -4,6 +4,11 @@ All notable changes to the "npm quick" extension will be documented in this file
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
 
+## [0.2.2] - 2026-02-19
+
+### Fixed
+- **Auto-open Output Panel**: Fixed issue where output panel didn't open automatically when executing scripts for the first time. Now the panel opens reliably on every script execution to ensure users can see logs immediately.
+
 ## [0.2.1] - 2026-02-17
 
 ### Improved
