@@ -3,7 +3,7 @@
   "publisher": "dvigo",
   "displayName": "npm quick",
   "description": "Discover and run npm/pnpm/yarn scripts instantly from the Command Palette. Save time and boost productivity.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "icon": "icon.png",
   "author": "David Vigo",
   "license": "MIT",
