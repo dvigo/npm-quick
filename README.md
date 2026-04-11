@@ -1,5 +1,13 @@
 # npm quick
 
+## 🚀 Versión 1.0.0 — 1 de marzo de 2026
+
+¡La primera versión estable de npm quick ya está disponible!
+
+- Todas las funcionalidades principales están completas y probadas.
+- Cobertura de tests completa y documentación actualizada.
+- Consulta el CHANGELOG para ver todos los cambios y mejoras.
+
 A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts directly from the Command Palette.
 
 [![Install](https://img.shields.io/badge/install-vs--code--marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)
