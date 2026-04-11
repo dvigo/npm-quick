@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.0.0] - 2026-03-01
+
+### Stable Release
+- Primera versión estable de la extensión "npm quick".
+- Todas las funcionalidades principales están completas y probadas.
+- Cobertura de tests completa y documentación actualizada.
+
 All notable changes to the "npm quick" extension will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org).
