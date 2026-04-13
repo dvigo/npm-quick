@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.0] - 2026-04-13
+
+### Added
+- **Antigravity Compatibility**: Support for Antigravity 1.107.0 and higher.
+
+### Changed
+- **Minimum Requirements**: Updated minimum VS Code engine requirement to 1.107.0.
+
 ## [1.0.0] - 2026-03-01
 
 ### Stable Release

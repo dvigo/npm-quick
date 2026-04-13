@@ -1,11 +1,11 @@
 # npm quick
 
-## 🚀 Versión 1.0.0 — 1 de marzo de 2026
+## 🚀 Versión 1.1.0 — 13 de abril de 2026
 
-¡La primera versión estable de npm quick ya está disponible!
+¡Actualización para compatibilidad con Antigravity!
 
-- Todas las funcionalidades principales están completas y probadas.
-- Cobertura de tests completa y documentación actualizada.
+- Soporte oficial para Antigravity 1.107.0 y versiones superiores.
+- Requisitos mínimos actualizados.
 - Consulta el CHANGELOG para ver todos los cambios y mejoras.
 
 A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts directly from the Command Palette.
@@ -38,7 +38,7 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 ## Requirements
 
-- VS Code 1.60.0 or higher
+- VS Code 1.107.0 or higher (including Antigravity)
 - A `package.json` file with a `scripts` section in your project
 
 ## Quick Start
