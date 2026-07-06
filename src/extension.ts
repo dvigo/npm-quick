@@ -156,22 +156,52 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 
 	// Read package.json
 	const packageJson = await readPackageJson(workspacePath);
-	if (!packageJson || !packageJson.scripts || Object.keys(packageJson.scripts).length === 0) {
+	if (!packageJson) {
 		vscode.window.showErrorMessage(t('noScripts'));
 		return;
 	}
 
+	// Detect package manager
+	const packageManager = await detectPackageManager(workspacePath);
+
 	// Create script items for quick pick
-	const scriptItems: (vscode.QuickPickItem & { script: string; scriptType: string })[] = Object.entries(packageJson.scripts).map(([name, command]) => {
-		const scriptType = detectScriptType(name);
-		const typeLabel = getScriptTypeLabel(scriptType);
-		return {
-			label: `${typeLabel}  ${name}`,
-			description: command as string,
-			script: name,
-			scriptType,
-		};
+	const scriptItems: (vscode.QuickPickItem & { script: string; scriptType: string })[] = [];
+
+	// Add default commands (install & audit)
+	const installCmd = `${packageManager} install`;
+	const installTypeLabel = getScriptTypeLabel('install');
+	scriptItems.push({
+		label: `${installTypeLabel}  install`,
+		description: installCmd,
+		script: 'install',
+		scriptType: 'install',
 	});
+
+	const auditCmd = `${packageManager} audit`;
+	const auditTypeLabel = getScriptTypeLabel('audit');
+	scriptItems.push({
+		label: `${auditTypeLabel}  audit`,
+		description: auditCmd,
+		script: 'audit',
+		scriptType: 'audit',
+	});
+
+	// Add the actual scripts from package.json if present
+	if (packageJson.scripts) {
+		Object.entries(packageJson.scripts).forEach(([name, command]) => {
+			if (name === 'install' || name === 'audit') {
+				return;
+			}
+			const scriptType = detectScriptType(name);
+			const typeLabel = getScriptTypeLabel(scriptType);
+			scriptItems.push({
+				label: `${typeLabel}  ${name}`,
+				description: command as string,
+				script: name,
+				scriptType,
+			});
+		});
+	}
 
 	// Show quick pick
 	const selectedScript = await vscode.window.showQuickPick(scriptItems, {
@@ -183,8 +213,6 @@ async function runScriptCommand(outputProvider: OutputViewProvider): Promise<voi
 		return; // User cancelled
 	}
 
-	// Detect package manager
-	const packageManager = await detectPackageManager(workspacePath);
 	const command = getScriptCommand(selectedScript.script, packageManager);
 
 	// Execute in output view (ID will be generated automatically)

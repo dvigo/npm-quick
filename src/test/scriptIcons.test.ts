@@ -62,6 +62,18 @@ suite('scriptIcons – detectScriptType', () => {
 		});
 	}
 
+	// ── Install scripts ────────────────────────
+	test('"install" is detected as "install"', () => {
+		assert.strictEqual(detectScriptType('install'), 'install');
+		assert.strictEqual(detectScriptType('INSTALL'), 'install');
+	});
+
+	// ── Audit scripts ──────────────────────────
+	test('"audit" is detected as "audit"', () => {
+		assert.strictEqual(detectScriptType('audit'), 'audit');
+		assert.strictEqual(detectScriptType('AUDIT'), 'audit');
+	});
+
 	// ── Other scripts (fallback) ──────────────
 	const otherNames = ['watch', 'clean', 'prepare', 'postinstall', 'custom-script', 'migrate'];
 	for (const name of otherNames) {
@@ -97,6 +109,8 @@ suite('scriptIcons – getScriptTypeLabel', () => {
 		format: '$(edit) Format',
 		deploy: '$(cloud-upload) Deploy',
 		docs:   '$(book) Docs',
+		install: '$(package) Install',
+		audit:  '$(shield) Audit',
 		other:  '$(play) Run',
 	};
 
@@ -108,7 +122,7 @@ suite('scriptIcons – getScriptTypeLabel', () => {
 	}
 
 	test('Label always contains a VS Code icon reference ($(...) format)', () => {
-		const types = ['test', 'build', 'dev', 'lint', 'format', 'deploy', 'docs', 'other'] as const;
+		const types = ['test', 'build', 'dev', 'lint', 'format', 'deploy', 'docs', 'install', 'audit', 'other'] as const;
 		for (const t of types) {
 			const label = getScriptTypeLabel(t);
 			assert.ok(label.includes('$('), `Label for "${t}" should contain a VS Code icon reference`);

@@ -210,4 +210,16 @@ suite('packageManager – getScriptCommand', () => {
 			assert.strictEqual(getScriptCommand(s, 'pnpm'), `pnpm run ${s}`);
 		}
 	});
+
+	test('Returns "<packageManager> install" for install', () => {
+		assert.strictEqual(getScriptCommand('install', 'npm'), 'npm install');
+		assert.strictEqual(getScriptCommand('install', 'pnpm'), 'pnpm install');
+		assert.strictEqual(getScriptCommand('install', 'yarn'), 'yarn install');
+	});
+
+	test('Returns "<packageManager> audit" for audit', () => {
+		assert.strictEqual(getScriptCommand('audit', 'npm'), 'npm audit');
+		assert.strictEqual(getScriptCommand('audit', 'pnpm'), 'pnpm audit');
+		assert.strictEqual(getScriptCommand('audit', 'yarn'), 'yarn audit');
+	});
 });

@@ -7,6 +7,14 @@ import { ScriptType } from './types';
 export function detectScriptType(scriptName: string): ScriptType {
   const name = scriptName.toLowerCase();
 
+  if (name === 'install') {
+    return 'install';
+  }
+
+  if (name === 'audit') {
+    return 'audit';
+  }
+
   // Test scripts
   if (name.includes('test') || name.includes('spec') || name.includes('jest') || name.includes('vitest')) {
     return 'test';
@@ -57,6 +65,8 @@ export function getIconPath(scriptType: ScriptType): vscode.ThemeIcon | string {
     format: new vscode.ThemeIcon('edit'),
     deploy: new vscode.ThemeIcon('cloud-upload'),
     docs: new vscode.ThemeIcon('book'),
+    install: new vscode.ThemeIcon('package'),
+    audit: new vscode.ThemeIcon('shield'),
     other: new vscode.ThemeIcon('play'),
   };
 
@@ -75,6 +85,8 @@ export function getScriptTypeLabel(scriptType: ScriptType): string {
     format: '$(edit) Format',
     deploy: '$(cloud-upload) Deploy',
     docs: '$(book) Docs',
+    install: '$(package) Install',
+    audit: '$(shield) Audit',
     other: '$(play) Run',
   };
 

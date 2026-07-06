@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.2.0] - 2026-07-06
+
+### Added
+- **Default Package Manager Commands**: The QuickPick script dropdown menu now always displays `install` and `audit` options as the first options, with appropriate package and shield icons.
+- **Dynamic Manager Command Detection**: Default commands dynamically adjust depending on the detected package manager (`npm`, `pnpm`, `yarn`).
+- **Flexible Dropdown Execution**: The quick pick dropdown will now show and run default tasks even if the `package.json` contains no other scripts.
+
 ## [1.1.0] - 2026-04-13
 
 ### Added

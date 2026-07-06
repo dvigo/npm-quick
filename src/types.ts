@@ -18,4 +18,4 @@ export interface ScriptItem {
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn';
 
-export type ScriptType = 'test' | 'build' | 'dev' | 'lint' | 'format' | 'deploy' | 'docs' | 'other';
+export type ScriptType = 'test' | 'build' | 'dev' | 'lint' | 'format' | 'deploy' | 'docs' | 'install' | 'audit' | 'other';

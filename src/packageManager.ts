@@ -44,6 +44,12 @@ export async function detectPackageManager(dirPath: string): Promise<PackageMana
  * Get the command to run a script based on package manager
  */
 export function getScriptCommand(scriptName: string, packageManager: PackageManager): string {
+  if (scriptName === 'install') {
+    return `${packageManager} install`;
+  }
+  if (scriptName === 'audit') {
+    return `${packageManager} audit`;
+  }
   switch (packageManager) {
     case 'pnpm':
       return `pnpm run ${scriptName}`;
