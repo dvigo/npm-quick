@@ -148,3 +148,119 @@ export function getScriptCommand(scriptName: string, packageManager: PackageMana
       return `npm run ${scriptName}`;
   }
 }
+
+/**
+ * Get a visual length of a string, taking into account surrogate pairs (emojis) and ignoring ANSI escape codes.
+ */
+function getVisualLength(str: string): number {
+  const clean = str.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '');
+  let length = 0;
+  for (let i = 0; i < clean.length; i++) {
+    const code = clean.charCodeAt(i);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      length += 2;
+      i++;
+    } else if (code === 0xfe0f) {
+      // Skip variation selector
+    } else {
+      length += 1;
+    }
+  }
+  return length;
+}
+
+/**
+ * Format a box summary using standard ANSI escape codes for the audit results.
+ */
+export function formatAuditSummary(total: number, low: number, moderate: number, high: number, critical: number): string {
+  const lineLength = 56;
+  const borderChar = '│';
+  const greenBorder = '\x1b[32m';
+  const redBorder = '\x1b[31m';
+  const reset = '\x1b[0m';
+  
+  let content = '';
+  
+  if (total === 0) {
+    const boldGreen = '\x1b[1;32m';
+    const titleLine = `  🛡️  Audit Summary: ${boldGreen}No vulnerabilities found${reset}`;
+    const visualLen = getVisualLength(titleLine);
+    const padding = ' '.repeat(Math.max(0, lineLength - visualLen));
+    
+    content += `${greenBorder}┌${'─'.repeat(lineLength)}┐${reset}\n`;
+    content += `${greenBorder}${borderChar}${reset}${titleLine}${padding}${greenBorder}${borderChar}${reset}\n`;
+    content += `${greenBorder}└${'─'.repeat(lineLength)}┘${reset}\n`;
+  } else {
+    const boldRed = '\x1b[1;31m';
+    const titleText = `  ⚠️  Audit Summary: ${boldRed}${total} vulnerabilit${total > 1 ? 'ies' : 'y'} found${reset}`;
+    const visualTitleLen = getVisualLength(titleText);
+    const titlePadding = ' '.repeat(Math.max(0, lineLength - visualTitleLen));
+    
+    const bold = '\x1b[1m';
+    const yellow = '\x1b[33m';
+    const red = '\x1b[31m';
+    const brightRed = '\x1b[91m';
+    
+    const breakdownText = `  Breakdown: Low: ${bold}${low}${reset} | Moderate: ${bold}${yellow}${moderate}${reset} | High: ${bold}${red}${high}${reset} | Critical: ${bold}${brightRed}${critical}${reset}`;
+    const visualBreakdownLen = getVisualLength(breakdownText);
+    const breakdownPadding = ' '.repeat(Math.max(0, lineLength - visualBreakdownLen));
+    
+    content += `${redBorder}┌${'─'.repeat(lineLength)}┐${reset}\n`;
+    content += `${redBorder}${borderChar}${reset}${titleText}${titlePadding}${redBorder}${borderChar}${reset}\n`;
+    content += `${redBorder}${borderChar}${reset}${' '.repeat(lineLength)}${redBorder}${borderChar}${reset}\n`;
+    content += `${redBorder}${borderChar}${reset}${breakdownText}${breakdownPadding}${redBorder}${borderChar}${reset}\n`;
+    content += `${redBorder}└${'─'.repeat(lineLength)}┘${reset}\n`;
+  }
+  
+  return content;
+}
+
+/**
+ * Scan the stdout/stderr log of an audit command and format a summary of vulnerability counts.
+ */
+export function parseAuditOutput(output: string): string | null {
+  const cleanOutput = output.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '');
+
+  const noVulnerabilitiesPatterns = [
+    /No vulnerabilities found/i,
+    /found 0 vulnerabilities/i,
+    /0 vulnerabilities found/i,
+    /zero vulnerabilities/i
+  ];
+
+  const hasNoVulnerabilities = noVulnerabilitiesPatterns.some(pattern => pattern.test(cleanOutput));
+
+  if (hasNoVulnerabilities) {
+    return formatAuditSummary(0, 0, 0, 0, 0);
+  }
+
+  // Find total vulnerabilities
+  const totalMatch = cleanOutput.match(/(\d+)\s+vulnerabilit/i) || cleanOutput.match(/[Ff]ound\s+(\d+)\s+vulnerabilit/i);
+  let total = totalMatch ? parseInt(totalMatch[1], 10) : null;
+
+  // Find breakdowns
+  const getCount = (name: string): number => {
+    const pattern1 = new RegExp(`(\\d+)\\s+${name}\\b`, 'i');
+    const pattern2 = new RegExp(`\\b${name}:?\\s*(\\d+)\\b`, 'i');
+    const match1 = cleanOutput.match(pattern1);
+    if (match1) return parseInt(match1[1], 10);
+    const match2 = cleanOutput.match(pattern2);
+    if (match2) return parseInt(match2[1], 10);
+    return 0;
+  };
+
+  const low = getCount('low');
+  const moderate = getCount('moderate');
+  const high = getCount('high');
+  const critical = getCount('critical');
+  const info = getCount('info');
+
+  if (total === null) {
+    total = low + moderate + high + critical + info;
+    if (total === 0) {
+      return null;
+    }
+  }
+
+  return formatAuditSummary(total, low, moderate, high, critical);
+}

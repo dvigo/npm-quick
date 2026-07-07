@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.3.1] - 2026-07-07
+
+### Added
+- **Audit Vulnerability Summary Box**: Added parsing for `audit` logs (npm, pnpm, yarn, bun) that prints a beautiful terminal-themed summary box with ANSI colors detailing the counts of vulnerabilities by severity level upon completion.
+
 ## [1.3.0] - 2026-07-07
 
 ### Added

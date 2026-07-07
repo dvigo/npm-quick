@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ChildProcess, spawn } from 'child_process';
 import { t } from './i18n';
+import { parseAuditOutput } from './packageManager';
 
 export class OutputViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'npm-quick.outputView';
@@ -498,12 +499,18 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 			this.enableInput();
 			this.enableStop();
 
+			let accumulatedOutput = '';
+
 			process.stdout.on('data', (data) => {
-				this.append(data.toString());
+				const text = data.toString();
+				accumulatedOutput += text;
+				this.append(text);
 			});
 
 			process.stderr.on('data', (data) => {
-				this.append(data.toString());
+				const text = data.toString();
+				accumulatedOutput += text;
+				this.append(text);
 			});
 
 			process.on('close', (code) => {
@@ -527,6 +534,13 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 					this.append(`\n\n✗ ${t('processTerminated')}: ${code}\n`);
 				}
 				
+				if (scriptName === 'audit') {
+					const summary = parseAuditOutput(accumulatedOutput);
+					if (summary) {
+						this.append('\n' + summary);
+					}
+				}
+
 				if (scriptName && this.onProcessEnd) {
 					this.onProcessEnd(scriptName, success);
 				}

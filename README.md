@@ -1,13 +1,14 @@
 # npm quick
 
-## 🚀 Versión 1.3.0 — 7 de julio de 2026
+## 🚀 Versión 1.3.1 — 7 de julio de 2026
 
-¡Soporte para Bun, Deno, colores ANSI de terminal y mejoras de foco de ejecución!
+¡Soporte para Bun, Deno, colores ANSI de terminal, mejoras de foco de ejecución y caja de resumen de auditoría!
 
 - Detección de Bun y Deno mediante ficheros de configuración (`deno.json`, `deno.jsonc`) y lockfiles.
 - Soporte para campos `"packageManager"` y `"engines"` en `package.json`.
 - Visualización de colores ANSI de terminal e interactividad con auto-foco en la entrada.
 - Enfoque visual automático de la ejecución en la Tree View y optimizaciones para eliminar parpadeos de panel.
+- Caja de resumen de vulnerabilidades tras la finalización del comando `audit` (npm, pnpm, yarn, bun).
 - Consulta el CHANGELOG para ver todos los detalles.
 
 A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn/bun/deno scripts directly from the Command Palette.
@@ -53,7 +54,6 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 5. The script executes in the NPM QUICK output panel with real-time updates
 
 ## Usage Examples
-## Usage Examples
 
 ### Running a Script
 1. Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux)
@@ -92,14 +92,16 @@ A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/
 
 The extension:
 
-1. **Reads** your project's `package.json` file
-2. **Extracts** all scripts defined in the `scripts` section
+1. **Reads** your project's configuration file (`package.json`, `deno.json`, or `deno.jsonc`)
+2. **Extracts** all scripts or tasks defined inside
 3. **Displays** them in a searchable quick pick interface
-4. **Detects** your package manager based on lock files present:
+4. **Detects** your package manager or engine based on lock files, config files, `"packageManager"`, or `"engines"` fields:
    - `pnpm-lock.yaml` → uses `pnpm run <script>`
    - `yarn.lock` → uses `yarn <script>`
-   - `package-lock.json` → uses `npm run <script>`
-   - *No lock file* → defaults to `npm run <script>`
+   - `bun.lockb` / `bun.lock` → uses `bun run <script>`
+   - `deno.lock` / `deno.json` / `deno.jsonc` → uses `deno task <script>`
+   - `package-lock.json` / `npm-shrinkwrap.json` → uses `npm run <script>`
+   - *No lock file/config* → defaults to `npm run <script>`
 5. **Executes** the selected script in a dedicated NPM QUICK output panel
 6. **Tracks** execution status and stores output in history
 7. **Allows** interactive control (stop, clear history, view logs)
@@ -143,17 +145,17 @@ The extension:
 ## Troubleshooting
 
 ### No scripts appear in the list
-- Ensure your project has a valid `package.json` file
-- Check that the `scripts` section exists and contains at least one script
+- Ensure your project has a valid `package.json`, `deno.json`, or `deno.jsonc` file
+- Check that the `scripts` or `tasks` section exists and contains at least one script
 - Make sure VS Code has opened a workspace folder
 
 ### Wrong package manager is detected
-- The extension detects the package manager based on lock files
-- Ensure the correct lock file exists in your project root
+- The extension detects the package manager based on lock files, configuration files (`deno.json`), or `"packageManager"` / `"engines"` fields in `package.json`
+- Ensure the correct lock file or configuration exists in your project root
 - If using npm without `package-lock.json`, install dependencies to generate it: `npm install`
 
 ### Script doesn't execute
-- Check that the script syntax is correct in `package.json`
+- Check that the script or task syntax is correct in your configuration file
 - Verify that required dependencies for the script are installed
 - Check the NPM QUICK panel output for error messages
 

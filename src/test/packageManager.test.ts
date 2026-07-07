@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { readPackageJson, detectPackageManager, getScriptCommand } from '../packageManager';
+import { readPackageJson, detectPackageManager, getScriptCommand, parseAuditOutput } from '../packageManager';
 
 // Helper to create a temporary directory with specific files
 async function createTempDir(files: Record<string, string>): Promise<string> {
@@ -309,5 +309,74 @@ suite('packageManager – getScriptCommand', () => {
 		assert.strictEqual(getScriptCommand('audit', 'yarn'), 'yarn audit');
 		assert.strictEqual(getScriptCommand('audit', 'bun'), 'bun pm audit');
 		assert.strictEqual(getScriptCommand('audit', 'deno'), 'deno task audit');
+	});
+});
+
+// ─────────────────────────────────────────────
+// parseAuditOutput
+// ─────────────────────────────────────────────
+suite('packageManager – parseAuditOutput', () => {
+
+	test('Returns a green summary box when 0 vulnerabilities are found (no vulnerabilities pattern)', () => {
+		const outputs = [
+			'found 0 vulnerabilities',
+			'No vulnerabilities found',
+			'0 vulnerabilities found',
+			'zero vulnerabilities'
+		];
+		for (const output of outputs) {
+			const res = parseAuditOutput(output);
+			assert.ok(res);
+			assert.ok(res.includes('No vulnerabilities found'), `Should match green success string for: "${output}"`);
+			assert.ok(res.includes('🛡️'), 'Should have shield emoji');
+			assert.ok(res.includes('\x1b[32m'), 'Should have green ANSI border');
+		}
+	});
+
+	test('Parses npm audit format with vulnerabilities', () => {
+		const log = 'found 12 vulnerabilities (3 low, 6 moderate, 3 high, 0 critical)';
+		const res = parseAuditOutput(log);
+		assert.ok(res);
+		assert.ok(res.includes('12 vulnerabilities found') || res.includes('12 vulnerability found'));
+		assert.ok(res.includes('Low: \x1b[1m3'));
+		assert.ok(res.includes('Moderate: \x1b[1m\x1b[33m6'));
+		assert.ok(res.includes('High: \x1b[1m\x1b[31m3'));
+		assert.ok(res.includes('Critical: \x1b[1m\x1b[91m0'));
+		assert.ok(res.includes('\x1b[31m'), 'Should have red ANSI border');
+	});
+
+	test('Parses pnpm audit format with vulnerabilities', () => {
+		const log = '5 vulnerabilities found\nSeverity: 1 low | 2 moderate | 2 high | 0 critical';
+		const res = parseAuditOutput(log);
+		assert.ok(res);
+		assert.ok(res.includes('5 vulnerabilities found'));
+		assert.ok(res.includes('Low: \x1b[1m1'));
+		assert.ok(res.includes('Moderate: \x1b[1m\x1b[33m2'));
+		assert.ok(res.includes('High: \x1b[1m\x1b[31m2'));
+		assert.ok(res.includes('Critical: \x1b[1m\x1b[91m0'));
+	});
+
+	test('Parses yarn audit format with vulnerabilities', () => {
+		const log = '5 vulnerabilities found - Resolutions still needed [1 low, 2 moderate, 2 high]';
+		const res = parseAuditOutput(log);
+		assert.ok(res);
+		assert.ok(res.includes('5 vulnerabilities found'));
+		assert.ok(res.includes('Low: \x1b[1m1'));
+		assert.ok(res.includes('Moderate: \x1b[1m\x1b[33m2'));
+		assert.ok(res.includes('High: \x1b[1m\x1b[31m2'));
+		assert.ok(res.includes('Critical: \x1b[1m\x1b[91m0'));
+	});
+
+	test('Parses bun pm audit format with vulnerabilities', () => {
+		const log = 'Found 3 vulnerabilities.';
+		const res = parseAuditOutput(log);
+		assert.ok(res);
+		assert.ok(res.includes('3 vulnerabilities found') || res.includes('3 vulnerability found'));
+	});
+
+	test('Returns null if the output is not recognized as an audit log', () => {
+		const log = 'some unrelated log message\nhello world\ncompilation complete';
+		const res = parseAuditOutput(log);
+		assert.strictEqual(res, null);
 	});
 });
