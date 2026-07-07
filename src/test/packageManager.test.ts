@@ -171,6 +171,76 @@ suite('packageManager – detectPackageManager', () => {
 			removeTempDir(tmpDir);
 		}
 	});
+
+	test('Detects bun when bun.lockb or bun.lock exists', async () => {
+		const tmpDir1 = await createTempDir({ 'bun.lockb': '' });
+		const tmpDir2 = await createTempDir({ 'bun.lock': '' });
+		try {
+			const pm1 = await detectPackageManager(tmpDir1);
+			assert.strictEqual(pm1, 'bun');
+			const pm2 = await detectPackageManager(tmpDir2);
+			assert.strictEqual(pm2, 'bun');
+		} finally {
+			removeTempDir(tmpDir1);
+			removeTempDir(tmpDir2);
+		}
+	});
+
+	test('Detects deno when deno.lock or deno.json or deno.jsonc exists', async () => {
+		const tmpDir1 = await createTempDir({ 'deno.lock': '' });
+		const tmpDir2 = await createTempDir({ 'deno.json': '{}' });
+		const tmpDir3 = await createTempDir({ 'deno.jsonc': '// comment\n{}' });
+		try {
+			const pm1 = await detectPackageManager(tmpDir1);
+			assert.strictEqual(pm1, 'deno');
+			const pm2 = await detectPackageManager(tmpDir2);
+			assert.strictEqual(pm2, 'deno');
+			const pm3 = await detectPackageManager(tmpDir3);
+			assert.strictEqual(pm3, 'deno');
+		} finally {
+			removeTempDir(tmpDir1);
+			removeTempDir(tmpDir2);
+			removeTempDir(tmpDir3);
+		}
+	});
+
+	test('Detects package manager via packageManager field in package.json', async () => {
+		const tmpDir = await createTempDir({
+			'package.json': JSON.stringify({ name: 'test', packageManager: 'bun@1.0.1' })
+		});
+		try {
+			const pm = await detectPackageManager(tmpDir);
+			assert.strictEqual(pm, 'bun');
+		} finally {
+			removeTempDir(tmpDir);
+		}
+	});
+
+	test('Detects package manager via engines field in package.json', async () => {
+		const tmpDir = await createTempDir({
+			'package.json': JSON.stringify({ name: 'test', engines: { pnpm: '>=9.0.0' } })
+		});
+		try {
+			const pm = await detectPackageManager(tmpDir);
+			assert.strictEqual(pm, 'pnpm');
+		} finally {
+			removeTempDir(tmpDir);
+		}
+	});
+
+	test('Correctly strips comments when reading deno.jsonc', async () => {
+		const tmpDir = await createTempDir({
+			'deno.jsonc': '{\n  // This is a comment\n  "name": "deno-project",\n  "tasks": {\n    "start": "deno run main.ts"\n  }\n}'
+		});
+		try {
+			const pkg = await readPackageJson(tmpDir);
+			assert.ok(pkg);
+			assert.strictEqual(pkg?.name, 'deno-project');
+			assert.deepStrictEqual(pkg?.scripts, { start: 'deno run main.ts' });
+		} finally {
+			removeTempDir(tmpDir);
+		}
+	});
 });
 
 // ─────────────────────────────────────────────
@@ -190,16 +260,28 @@ suite('packageManager – getScriptCommand', () => {
 		assert.strictEqual(getScriptCommand('build', 'yarn'), 'yarn build');
 	});
 
+	test('Returns "bun run <script>" for bun', () => {
+		assert.strictEqual(getScriptCommand('build', 'bun'), 'bun run build');
+	});
+
+	test('Returns "deno task <script>" for deno', () => {
+		assert.strictEqual(getScriptCommand('build', 'deno'), 'deno task build');
+	});
+
 	test('Works with colon-separated script names (dev:server)', () => {
 		assert.strictEqual(getScriptCommand('dev:server', 'npm'), 'npm run dev:server');
 		assert.strictEqual(getScriptCommand('dev:server', 'pnpm'), 'pnpm run dev:server');
 		assert.strictEqual(getScriptCommand('dev:server', 'yarn'), 'yarn dev:server');
+		assert.strictEqual(getScriptCommand('dev:server', 'bun'), 'bun run dev:server');
+		assert.strictEqual(getScriptCommand('dev:server', 'deno'), 'deno task dev:server');
 	});
 
 	test('Works with kebab-case script names', () => {
 		assert.strictEqual(getScriptCommand('my-script', 'npm'), 'npm run my-script');
 		assert.strictEqual(getScriptCommand('my-script', 'pnpm'), 'pnpm run my-script');
 		assert.strictEqual(getScriptCommand('my-script', 'yarn'), 'yarn my-script');
+		assert.strictEqual(getScriptCommand('my-script', 'bun'), 'bun run my-script');
+		assert.strictEqual(getScriptCommand('my-script', 'deno'), 'deno task my-script');
 	});
 
 	test('Works with common script names: test, start, watch, lint, format', () => {
@@ -208,6 +290,8 @@ suite('packageManager – getScriptCommand', () => {
 			assert.strictEqual(getScriptCommand(s, 'npm'), `npm run ${s}`);
 			assert.strictEqual(getScriptCommand(s, 'yarn'), `yarn ${s}`);
 			assert.strictEqual(getScriptCommand(s, 'pnpm'), `pnpm run ${s}`);
+			assert.strictEqual(getScriptCommand(s, 'bun'), `bun run ${s}`);
+			assert.strictEqual(getScriptCommand(s, 'deno'), `deno task ${s}`);
 		}
 	});
 
@@ -215,11 +299,15 @@ suite('packageManager – getScriptCommand', () => {
 		assert.strictEqual(getScriptCommand('install', 'npm'), 'npm install');
 		assert.strictEqual(getScriptCommand('install', 'pnpm'), 'pnpm install');
 		assert.strictEqual(getScriptCommand('install', 'yarn'), 'yarn install');
+		assert.strictEqual(getScriptCommand('install', 'bun'), 'bun install');
+		assert.strictEqual(getScriptCommand('install', 'deno'), 'deno install');
 	});
 
 	test('Returns "<packageManager> audit" for audit', () => {
 		assert.strictEqual(getScriptCommand('audit', 'npm'), 'npm audit');
 		assert.strictEqual(getScriptCommand('audit', 'pnpm'), 'pnpm audit');
 		assert.strictEqual(getScriptCommand('audit', 'yarn'), 'yarn audit');
+		assert.strictEqual(getScriptCommand('audit', 'bun'), 'bun pm audit');
+		assert.strictEqual(getScriptCommand('audit', 'deno'), 'deno task audit');
 	});
 });

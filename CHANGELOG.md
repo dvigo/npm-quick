@@ -1,5 +1,17 @@
 # Change Log
 
+## [1.3.0] - 2026-07-07
+
+### Added
+- **Bun and Deno Support**: Native detection and command runner support for Bun (`bun.lock`, `bun.lockb`) and Deno (`deno.json`, `deno.jsonc`, `deno.lock`). Comments in `deno.jsonc` are stripped safely.
+- **Flexible Package Manager Detection**: Checks `"packageManager"` and `"engines"` configuration fields inside `package.json` to determine the manager.
+- **ANSI Terminal Color Rendering**: Real-time terminal output now correctly renders ANSI graphics styles (bold, italics, underline), standard/bright colors, and 256-color palettes using native VS Code theme terminal CSS variables.
+- **Visual Focus Synchronization**: Starts executions with automatic selection highlighting inside the tree view list.
+- **Keyboard Auto-Focus**: Directs focus immediately to the terminal stdin input text field when a script starts and requests input.
+
+### Improved
+- **Visual Panel Performance**: Replaced global container toggle commands with specific view focus calls (`npm-quick.outputView.focus`), preventing bottom panel toggles/flickers when navigating script outputs.
+
 ## [1.2.0] - 2026-07-06
 
 ### Added

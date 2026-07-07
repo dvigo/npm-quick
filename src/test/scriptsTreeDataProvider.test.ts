@@ -245,6 +245,23 @@ suite('ScriptsTreeDataProvider – TreeDataProvider API', () => {
 		assert.deepStrictEqual(nested, [], 'Tree items have no children');
 	});
 
+	test('getParent returns null', () => {
+		const provider = makeProvider();
+		const item = new ScriptItem('$(play) dev', 'dev', 'npm run dev', 'dev', '/ws', 'running', 'id-1');
+		assert.strictEqual(provider.getParent(item), null);
+	});
+
+	test('getScriptItemById returns correct ScriptItem or undefined', () => {
+		const provider = makeProvider();
+		assert.strictEqual(provider.getScriptItemById('non-existent'), undefined);
+
+		const id = provider.addRunningScript('build', 'npm run build', '/ws', 'test-id');
+		const item = provider.getScriptItemById(id);
+		assert.ok(item);
+		assert.strictEqual(item?.id, 'test-id');
+		assert.strictEqual(item?.script, 'build');
+	});
+
 	test('onDidChangeTreeData fires after addRunningScript', (done) => {
 		const provider = makeProvider();
 		const disposable = provider.onDidChangeTreeData!(() => {

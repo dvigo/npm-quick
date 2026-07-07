@@ -16,6 +16,6 @@ export interface ScriptItem {
   scriptType?: ScriptType;
 }
 
-export type PackageManager = 'npm' | 'pnpm' | 'yarn';
+export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun' | 'deno';
 
 export type ScriptType = 'test' | 'build' | 'dev' | 'lint' | 'format' | 'deploy' | 'docs' | 'install' | 'audit' | 'other';

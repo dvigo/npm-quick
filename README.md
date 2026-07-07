@@ -1,26 +1,26 @@
 # npm quick
 
-## 🚀 Versión 1.1.0 — 13 de abril de 2026
+## 🚀 Versión 1.3.0 — 7 de julio de 2026
 
-¡Actualización para compatibilidad con Antigravity!
+¡Soporte para Bun, Deno, colores ANSI de terminal y mejoras de foco de ejecución!
 
-- Soporte oficial para Antigravity 1.107.0 y versiones superiores.
-- Requisitos mínimos actualizados.
-- Consulta el CHANGELOG para ver todos los cambios y mejoras.
+- Detección de Bun y Deno mediante ficheros de configuración (`deno.json`, `deno.jsonc`) y lockfiles.
+- Soporte para campos `"packageManager"` y `"engines"` en `package.json`.
+- Visualización de colores ANSI de terminal e interactividad con auto-foco en la entrada.
+- Enfoque visual automático de la ejecución en la Tree View y optimizaciones para eliminar parpadeos de panel.
+- Consulta el CHANGELOG para ver todos los detalles.
 
-A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn scripts directly from the Command Palette.
-
-[![Install](https://img.shields.io/badge/install-vs--code--marketplace-blue)](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)
+A lightweight VS Code extension that makes it easy to discover and run npm/pnpm/yarn/bun/deno scripts directly from the Command Palette.
 
 **[Get it from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dvigo.npm-quick)**
 
 ## Features
 
-✨ **Quick Script Discovery** - Browse all scripts defined in your `package.json` via Command Palette or keyboard shortcut
+✨ **Quick Script Discovery** - Browse all scripts defined in your config via Command Palette or keyboard shortcut
 
-🚀 **Automatic Package Manager Detection** - Automatically detects whether your project uses npm, pnpm, or yarn based on lock files
+🚀 **Automatic Package Manager Detection** - Automatically detects whether your project uses npm, pnpm, yarn, bun, or deno based on lock files, config files, `packageManager`, and `engines` configuration fields.
 
-📊 **Interactive Output Panel** - Dedicated execution panel with real-time output, input support, and process control
+📊 **Interactive Output Panel** - Dedicated execution panel with terminal ANSI colors, real-time output, input support, and process control
 
 ⏹️ **Process Control** - Stop running scripts gracefully with Ctrl+C or delete execution history entries
 
@@ -107,11 +107,13 @@ The extension:
 
 ## Supported Package Managers
 
-| Package Manager | Lock File | Command |
+| Package Manager | Lock File / Config | Command |
 |---|---|---|
-| **npm** | `package-lock.json` | `npm run <script>` |
+| **npm** | `package-lock.json`, `npm-shrinkwrap.json` | `npm run <script>` |
 | **pnpm** | `pnpm-lock.yaml` | `pnpm run <script>` |
 | **yarn** | `yarn.lock` | `yarn <script>` |
+| **bun** | `bun.lockb`, `bun.lock` | `bun run <script>` |
+| **deno** | `deno.lock`, `deno.json`, `deno.jsonc` | `deno task <script>` |
 
 ## Command Reference
 

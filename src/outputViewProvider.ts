@@ -45,12 +45,18 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	public async reveal() {
-		// Always execute the command to open the panel, which will create the view if it doesn't exist
-		await vscode.commands.executeCommand('workbench.view.extension.npm-quick-scripts');
-		// If the view already exists, explicitly show it
 		if (this.view) {
-			this.view.show(true);
+			if (!this.view.visible) {
+				this.view.show(true);
+			}
+		} else {
+			// Focus the specific view, which will create/resolve the view without toggling the container
+			await vscode.commands.executeCommand('npm-quick.outputView.focus');
 		}
+	}
+
+	public isViewVisible(): boolean {
+		return !!this.view && this.view.visible;
 	}
 
 	private getHtmlForWebview(webview: vscode.Webview): string {
@@ -216,15 +222,177 @@ export class OutputViewProvider implements vscode.WebviewViewProvider {
 		const deleteBtn = document.getElementById('deleteBtn');
 		const stopBtn = document.getElementById('stopBtn');
 
+		function escapeHtml(text) {
+			return text
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#039;");
+		}
+
+		function get256Color(index) {
+			if (index < 8) {
+				const colors = ['Black', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White'];
+				return colors[index];
+			}
+			if (index < 16) {
+				const colors = ['BrightBlack', 'BrightRed', 'BrightGreen', 'BrightYellow', 'BrightBlue', 'BrightMagenta', 'BrightCyan', 'BrightWhite'];
+				return colors[index - 8];
+			}
+			if (index >= 16 && index <= 231) {
+				const val = index - 16;
+				const r = Math.floor(val / 36) * 51;
+				const g = Math.floor((val % 36) / 6) * 51;
+				const b = (val % 6) * 51;
+				return 'rgb(' + r + ',' + g + ',' + b + ')';
+			}
+			if (index >= 232 && index <= 255) {
+				const val = (index - 232) * 10 + 8;
+				return 'rgb(' + val + ',' + val + ',' + val + ')';
+			}
+			return null;
+		}
+
+		function ansiToHtml(text) {
+			const cleanText = text
+				.replace(/\\x1b\\[[0-9;?]*[a-gl-z]/gi, '')
+				.replace(/\\x1b[()][AB012]/g, '');
+			const escaped = escapeHtml(cleanText);
+			const parts = escaped.split(/\\x1b\\[([0-9;]*)m/);
+			if (parts.length === 1) {
+				return parts[0];
+			}
+			
+			let html = '';
+			let bold = false;
+			let italic = false;
+			let underline = false;
+			let fgColor = null;
+			let bgColor = null;
+			
+			function getSpanOpenTag() {
+				let styles = [];
+				if (bold) styles.push('font-weight: bold');
+				if (italic) styles.push('font-style: italic');
+				if (underline) styles.push('text-decoration: underline');
+				if (fgColor) {
+					styles.push('color: var(--vscode-terminal-ansi' + fgColor + ', ' + fgColor + ')');
+				}
+				if (bgColor) {
+					styles.push('background-color: var(--vscode-terminal-ansi' + bgColor + ', ' + bgColor + ')');
+				}
+				if (styles.length === 0) {
+					return '';
+				}
+				return '<span style="' + styles.join('; ') + '">';
+			}
+			
+			let openSpans = 0;
+			
+			for (let i = 0; i < parts.length; i++) {
+				if (i % 2 === 0) {
+					const textPart = parts[i];
+					if (textPart) {
+						html += textPart;
+					}
+				} else {
+					const codeStr = parts[i];
+					const codes = codeStr ? codeStr.split(';').map(Number) : [0];
+					let resetStyles = false;
+					
+					for (let j = 0; j < codes.length; j++) {
+						const code = codes[j];
+						if (code === 0) {
+							resetStyles = true;
+						} else if (code === 1) {
+							bold = true;
+						} else if (code === 3) {
+							italic = true;
+						} else if (code === 4) {
+							underline = true;
+						} else if (code === 22) {
+							bold = false;
+						} else if (code === 23) {
+							italic = false;
+						} else if (code === 24) {
+							underline = false;
+						} else if (code >= 30 && code <= 37) {
+							const colors = ['Black', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White'];
+							fgColor = colors[code - 30];
+						} else if (code >= 90 && code <= 97) {
+							const colors = ['BrightBlack', 'BrightRed', 'BrightGreen', 'BrightYellow', 'BrightBlue', 'BrightMagenta', 'BrightCyan', 'BrightWhite'];
+							fgColor = colors[code - 90];
+						} else if (code === 39) {
+							fgColor = null;
+						} else if (code >= 40 && code <= 47) {
+							const colors = ['Black', 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan', 'White'];
+							bgColor = colors[code - 40];
+						} else if (code >= 100 && code <= 107) {
+							const colors = ['BrightBlack', 'BrightRed', 'BrightGreen', 'BrightYellow', 'BrightBlue', 'BrightMagenta', 'BrightCyan', 'BrightWhite'];
+							bgColor = colors[code - 100];
+						} else if (code === 49) {
+							bgColor = null;
+						} else if (code === 38 && codes[j + 1] === 5) {
+							const colorIndex = codes[j + 2];
+							if (colorIndex !== undefined) {
+								fgColor = get256Color(colorIndex);
+								j += 2;
+							}
+						} else if (code === 48 && codes[j + 1] === 5) {
+							const colorIndex = codes[j + 2];
+							if (colorIndex !== undefined) {
+								bgColor = get256Color(colorIndex);
+								j += 2;
+							}
+						}
+					}
+					
+					if (resetStyles) {
+						bold = false;
+						italic = false;
+						underline = false;
+						fgColor = null;
+						bgColor = null;
+					}
+					
+					while (openSpans > 0) {
+						html += '</span>';
+						openSpans--;
+					}
+					
+					const openTag = getSpanOpenTag();
+					if (openTag) {
+						html += openTag;
+						openSpans++;
+					}
+				}
+			}
+			
+			while (openSpans > 0) {
+				html += '</span>';
+				openSpans--;
+			}
+			
+			return html;
+		}
+
 		window.addEventListener('message', event => {
 			const message = event.data;
 			if (message.command === 'append') {
-				outputDiv.textContent += message.text;
+				const tempDiv = document.createElement('div');
+				tempDiv.innerHTML = ansiToHtml(message.text);
+				while (tempDiv.firstChild) {
+					outputDiv.appendChild(tempDiv.firstChild);
+				}
 				outputContainer.scrollTop = outputContainer.scrollHeight;
 			} else if (message.command === 'clear') {
 				outputDiv.textContent = '';
 			} else if (message.command === 'enableInput') {
 				inputContainer.classList.add('active');
+				setTimeout(() => {
+					userInput.focus();
+				}, 50);
 			} else if (message.command === 'disableInput') {
 				inputContainer.classList.remove('active');
 			} else if (message.command === 'enableDelete') {

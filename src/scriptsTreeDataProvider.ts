@@ -77,6 +77,27 @@ export class ScriptsTreeDataProvider implements vscode.TreeDataProvider<ScriptIt
 		return element;
 	}
 
+	getParent(element: ScriptItem): vscode.ProviderResult<ScriptItem> {
+		return null;
+	}
+
+	getScriptItemById(id: string): ScriptItem | undefined {
+		const entry = this.history.get(id);
+		if (!entry) {
+			return undefined;
+		}
+		const scriptType = detectScriptType(entry.scriptName);
+		return new ScriptItem(
+			`${getScriptTypeLabel(scriptType)}  ${entry.scriptName}`,
+			entry.scriptName,
+			entry.command,
+			scriptType,
+			entry.workspacePath,
+			entry.status,
+			entry.id
+		);
+	}
+
 	async getChildren(element?: ScriptItem): Promise<ScriptItem[]> {
 		if (element) {
 			return [];

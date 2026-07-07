@@ -6,6 +6,7 @@ import { OutputViewProvider } from './outputViewProvider';
 import { t } from './i18n';
 
 let treeDataProvider: ScriptsTreeDataProvider;
+let treeView: vscode.TreeView<ScriptItem>;
 let outputProvider: OutputViewProvider;
 let statusBarItem: vscode.StatusBarItem;
 
@@ -22,7 +23,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Create and register the tree data provider
 	treeDataProvider = new ScriptsTreeDataProvider(context, outputProvider);
-	vscode.window.registerTreeDataProvider('npm-quick.scriptsView', treeDataProvider);
+	treeView = vscode.window.createTreeView('npm-quick.scriptsView', { treeDataProvider });
+	context.subscriptions.push(treeView);
 
 	// Set up callbacks for process lifecycle
 	outputProvider.setProcessCallbacks(
@@ -30,7 +32,14 @@ export function activate(context: vscode.ExtensionContext) {
 			const workspaceFolders = vscode.workspace.workspaceFolders;
 			if (workspaceFolders) {
 				// Use the provided scriptId instead of generating a new one
-				treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath, scriptId);
+				const actualId = treeDataProvider.addRunningScript(scriptName, command, workspaceFolders[0].uri.fsPath, scriptId);
+				// Focus/Reveal the execution item in the tree view
+				setTimeout(() => {
+					const item = treeDataProvider.getScriptItemById(actualId);
+					if (item) {
+						treeView.reveal(item, { select: true, focus: true });
+					}
+				}, 100);
 			}
 		},
 		(scriptName: string, success: boolean) => {
@@ -104,7 +113,9 @@ export function activate(context: vscode.ExtensionContext) {
 			const output = treeDataProvider.getOutput(item.id);
 			const entry = treeDataProvider.getEntry(item.id);
 			const isRunning = entry?.status === 'running';
-			await outputProvider.reveal();
+			if (!outputProvider.isViewVisible()) {
+				await outputProvider.reveal();
+			}
 			outputProvider.loadOutput(output, item.id, isRunning, entry?.scriptName);
 		}
 	});
